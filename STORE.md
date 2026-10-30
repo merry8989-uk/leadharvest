@@ -191,6 +191,7 @@ eight export formats, local history, diagnostic telemetry with a share-to-develo
 - [ ] `node tools/audit.js .` → 0 failures
 - [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.1.zip` (manifest at the zip root)
 - [ ] Upload **`leadharvest-extension-v1.3.1.zip`** to AMO → *On this site* (listed). Never upload `leadharvest-SELFHOST-ONLY-*.zip`: it carries `gecko.update_url`, which AMO rejects for listed add-ons.
+- [ ] Optional: upload **`leadharvest-firefox-v1.3.1.zip`** instead if you want a validation with **zero** warnings — it is the same code with `background.service_worker` removed (Firefox does not need it; Chrome does). Keep the normal zip for Chrome/Edge users.
 - [ ] Fill the fields above, upload the five screenshots, set the licence
 - [ ] Paste §5 into the reviewer notes
 - [ ] After signing, replace the “Download” button on the site with the AMO install link

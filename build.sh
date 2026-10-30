@@ -29,6 +29,16 @@ if [ "${1:-}" = "--self-hosted" ] || [ "${SELF_HOSTED:-0}" = "1" ]; then
   echo
 fi
 
+# 1b2. Firefox-only package: same code, manifest without background.service_worker, which
+#      removes the only warning AMO reports on the cross-browser package.
+if [ "${1:-}" = "--firefox" ] || [ "${FIREFOX_ONLY:-0}" = "1" ]; then
+  rm -rf dist/firefox
+  node tools/make-firefox-manifest.js
+  cp -r src icons dist/firefox/
+  ( cd dist/firefox && zip -rq "../leadharvest-firefox-v$VER.zip" manifest.json src icons -x "*.DS_Store" "*/.*" )
+  rm -rf dist/firefox
+fi
+
 # 1c. Firefox update manifest, regenerated for this version so it never goes stale
 node tools/make-updates.js --file "dist/leadharvest-extension-v$VER.zip" --out docs/updates.json >/dev/null
 

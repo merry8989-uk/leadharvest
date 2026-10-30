@@ -23,7 +23,8 @@ future version you upload to AMO reaches users on its own.
 | `docs/updates.json` | The update manifest, regenerated on every build. Live at **https://merry8989-uk.github.io/leadharvest/updates.json** |
 | `tools/make-updates.js` | Writes `docs/updates.json` from a built package: version, HTTPS link, `sha256` hash, minimum Firefox version |
 | `tools/inject-update-url.js` | Writes a copy of `manifest.json` with `gecko.update_url` set (used only for the self-hosted build) |
-| `bash build.sh --self-hosted` | Produces `dist/leadharvest-selfhosted-v<ver>.zip` — same code, with `update_url` pointing at the URL above |
+| `bash build.sh --self-hosted` | Produces `dist/leadharvest-SELFHOST-ONLY-v<ver>.zip` — same code, with `update_url` pointing at the URL above |
+| `bash build.sh --firefox` | Produces `dist/leadharvest-firefox-v<ver>.zip` — manifest without `background.service_worker`, so AMO validates with zero warnings |
 
 The normal `bash build.sh` deliberately leaves `update_url` **out**. An add-on listed on AMO does not
 need it, and a manifest that points at a third-party update server invites questions during review.

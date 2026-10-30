@@ -235,7 +235,9 @@ demo data ke saath), mockups nahi. Dobara banane ke liye: `node tools/shots.js` 
 ## 14. Build & verify
 
 ```bash
-bash build.sh                      # dist/ me extension + source zip
+bash build.sh                      # dist/ me extension + source zip (Chrome + Firefox, ek hi manifest)
+bash build.sh --firefox            # Firefox-only zip: manifest me service_worker key nahi -> AMO par 0 warnings
+bash build.sh --self-hosted        # gecko.update_url wala build (AMO par kabhi upload na karein)
 node tools/audit.js .              # static audit (0 fail hona chahiye)
 npx web-ext@latest lint --source-dir .   # Mozilla ka addons-linter (AMO wahi chalata hai)
 ```
