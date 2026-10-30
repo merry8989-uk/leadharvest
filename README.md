@@ -5,7 +5,7 @@ phone, email, designation, company, address — nikaal kar aapke device par loca
 unhe **Excel, CSV, PDF, TXT, Notes (.md), JSON** me export karta hai. Sab kuch browser ke andar chalta
 hai: koi server nahi, koi account nahi, koi telemetry nahi.
 
-**Version 1.1.0** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
+**Version 1.2.0** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
 (Excel aur PDF writer isi project me likhe hain)
 
 - **Landing page / feature docs:** https://merry8989-uk.github.io/leadharvest/ (`docs/index.html`)
@@ -126,8 +126,24 @@ File name template: `{domain}`, `{date}`, `{time}`, `{count}`.
 - **Records** — `storage.local`, max 5,000, device par.
 - **History** — 500 entries: kab, kaunse page se, method, count, duration, export format. Kisi bhi entry
   ko dobara export ya delete kar sakte hain.
-- **Logs** — scrape/export/settings/errors, level + scope. Email/phone default me redact.
-- **Download diagnostics** (Settings) — version, settings, counts, history, logs ka JSON bundle.
+- **Logs** — 15 categories, 57 event types: lifecycle, scraping session, field extraction
+  (success/missing counts per field), data quality, duplicates, website compatibility, collection,
+  export, storage, API, performance, errors, UI interactions. Email/phone default me redact.
+- **Diagnostics panel** (Settings) — 9 live counters (sessions, extraction success rate, field
+  completeness, duplicates, exports, errors, avg timing), capability report, aur bundle export.
+
+### Share logs with developer
+
+Settings → Diagnostics → note likhein (optional) → **Share logs with developer**.
+
+1. Bundle banta hai (JSON + TXT) — **sirf counts, hostname, timings, technical signals**. Koi email,
+   phone, naam ya page text nahi.
+2. Phone / Windows par system share sheet file ko **seedha attach** kar deta hai.
+3. Warna file Downloads me save hoti hai aur mail compose window pre-filled khulti hai
+   (`br19shc39@gmail.com`) — bas attach kar dein.
+4. "Gmail me kholo" button web compose kholta hai; "Download diagnostics / report" se manual export.
+
+Kuch bhi tab tak nahi jata jab tak aap button na dabayein — aur mail aapke apne mail client se jati hai.
 
 ---
 
@@ -150,6 +166,7 @@ File name template: `{domain}`, `{date}`, `{time}`, `{count}`.
 | Phone nahi mila | Number image ya JS-load me hai — auto-scroll ON karein, ya custom regex dein |
 | Address adhoora | `[class*=address]` selector add karein, ya element picker use karein |
 | PDF me Hindi `?` ban gaya | HTML export → print se PDF banayein (browser fonts) |
+| Kisi site par field nahi mila | Settings → Diagnostics → note likh kar **Share logs with developer** — bundle me kaunse field miss hue aur site ka hostname chala jayega |
 | Excel number text ban gaya | Jaan-boojh kar — leading zero bachane ke liye |
 
 ---
@@ -174,6 +191,8 @@ leadharvest/
     ├── ui.css
     └── lib/
         ├── schema.js      # field registry + default settings
+        ├── telemetry.js   # event catalog, redaction, metrics, quality scoring
+        ├── diagnostics.js # bundle + TXT report + mail compose helpers
         ├── exporter.js    # CSV / TXT / MD / JSON / HTML
         ├── xlsx.js        # dependency-free .xlsx writer
         ├── pdf.js         # dependency-free PDF writer
@@ -183,7 +202,8 @@ leadharvest/
 
 Permissions: `storage`, `unlimitedStorage`, `scripting`, `activeTab`, `downloads`, `contextMenus`,
 host `<all_urls>`. Koi remote code nahi, koi `eval` nahi, koi library nahi. Content script
-automatically inject nahi hota — sirf click par.
+automatically inject nahi hota — sirf click par. Telemetry local hai; "Share logs" user ke apne mail
+client se jata hai, extension khud kuch upload nahi karta.
 
 ---
 

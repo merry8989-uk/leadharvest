@@ -179,21 +179,32 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
   /* ----------------------------------------------------------- EXPORTING */
   async function doExport(format, records) {
     if (!records.length) { toast('Export ke liye koi record nahi.', 'err'); return; }
+    const t0 = Date.now();
     try {
       const out = LeadExport.build(format, records, S.settings, {
         title: 'LeadHarvest export',
         subtitle: records.length + ' record(s) · ' + (records[0].domain || hostOf(records[0].sourceUrl))
       });
       const name = LeadExport.fileName(S.settings, out.ext, records);
-      await LeadSave.save(name, out.mime, out.bytes || out.text);
-      await send({ type: 'LH_EXPORT_LOG', format, count: records.length });
+      const payload = out.bytes || out.text;
+      const bytes = (payload && (payload.byteLength || payload.length)) || 0;
+      await LeadSave.save(name, out.mime, payload);
+      await send({
+        type: 'LH_EXPORT_LOG', format, count: records.length,
+        durationMs: Date.now() - t0, bytes,
+        columns: out.table ? out.table.cols.length : 0,
+        excluded: Math.max(0, S.records.length - records.length)
+      });
       if (format === 'pdf' && LeadPDF.hasNonLatin(out.table.rows)) {
         toast('PDF saved, lekin Hindi/Devanagari text ? ban sakta hai — HTML export → Print se perfect PDF milega.', 'warn');
       } else {
         toast('Saved: ' + name + ' (Downloads folder)', 'ok');
       }
-      await loadState(); renderLogs();
-    } catch (e) { toast('Export failed: ' + e.message, 'err'); }
+      await loadState(); renderLogs(); renderDiag();
+    } catch (e) {
+      toast('Export failed: ' + e.message, 'err');
+      await send({ type: 'LH_EXPORT_LOG', status: 'failed', format, error: e.message, errorCode: 'export_exception', durationMs: Date.now() - t0 });
+    }
   }
 
   function selectedRecords() {
@@ -294,7 +305,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
         const tab = await chooseTab('Element picker — ' + (getField().label || key));
         if (!tab) return;
         try {
-          await api.scripting.executeScript({ target: { tabId: tab.id }, files: ['src/lib/schema.js', 'src/content.js'] });
+          await api.scripting.executeScript({ target: { tabId: tab.id }, files: ['src/lib/schema.js', 'src/lib/telemetry.js', 'src/content.js'] });
         } catch (e) { /* already injected */ }
         try {
           await api.tabs.sendMessage(tab.id, { type: 'LH_START_PICK', fieldKey: key });
@@ -375,6 +386,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     $('#logRedact').checked = s.logging.redactPII !== false;
     $('#logMax').value = s.logging.maxEntries || 800;
     $('#storageLine').textContent = S.records.length + ' records · ' + S.history.length + ' history entries · ' + S.logs.length + ' log entries';
+    renderDiag();
   }
 
   $('#saveSettings').addEventListener('click', async () => {
@@ -408,21 +420,116 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     });
   });
 
-  $('#diagnostics').addEventListener('click', async () => {
-    const bundle = {
-      generator: 'LeadHarvest diagnostics',
-      version: S.version,
-      generatedAt: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      platform: navigator.platform || '',
-      counts: { records: S.records.length, history: S.history.length, logs: S.logs.length },
-      settings: JSON.parse(JSON.stringify(S.settings)),
-      history: S.history.slice(0, 100),
-      logs: S.logs.slice(0, 400)
-    };
-    if (bundle.settings.ai) bundle.settings.ai.apiKey = bundle.settings.ai.apiKey ? '[redacted]' : '';
-    await LeadSave.save('leadharvest-diagnostics-' + Date.now() + '.json', 'application/json', JSON.stringify(bundle, null, 2));
-    toast('Diagnostics file download ho gayi', 'ok');
+  /* ------------------------------------------------------- DIAGNOSTICS */
+  function diagStat(label, value, hint) {
+    return '<div class="stat"><b>' + esc(value) + '</b><span class="small muted">' + esc(label) + (hint ? ' · ' + esc(hint) : '') + '</span></div>';
+  }
+
+  function renderDiag() {
+    const box = $('#diagStats');
+    if (!box) return;
+    const TL = globalThis.LeadTelemetry;
+    const m = S.metrics || {};
+    const r = TL && TL.rates ? TL.rates(m) : {};
+    const env = S.env || {};
+    const sessions = m.sessions || {};
+    const dup = m.duplicates || {};
+    box.innerHTML =
+      diagStat('Events collected', S.logs.length) +
+      diagStat('Scrape sessions', sessions.started || 0, (sessions.failed || 0) + ' failed') +
+      diagStat('Records extracted', (m.records && m.records.extracted) || 0) +
+      diagStat('Extraction success', r.extraction_success_rate == null ? '—' : r.extraction_success_rate + '%') +
+      diagStat('Field completeness', r.field_completeness == null ? '—' : r.field_completeness + '%') +
+      diagStat('Duplicates caught', (dup.exact || 0) + (dup.potential || 0)) +
+      diagStat('Exports', (m.exports && m.exports.ok) || 0, ((m.exports && m.exports.failed) || 0) + ' failed') +
+      diagStat('Errors', (m.errors && m.errors.total) || 0) +
+      diagStat('Avg extraction', (r.avg_processing_ms || 0) + ' ms');
+    const meta = $('#diagMeta');
+    if (meta) {
+      meta.textContent = [env.browser, env.browser_version, env.platform].filter(Boolean).join(' ') +
+        ' · v' + S.version + ' · log retention: ' + ((S.settings.logging && S.settings.logging.maxEntries) || 1200) + ' events';
+    }
+  }
+
+  async function diagBundle(trigger) {
+    const note = ($('#diagNote') && $('#diagNote').value || '').trim();
+    const r = await send({ type: 'LH_GET_DIAGNOSTICS', note, trigger: trigger || 'manual' });
+    if (!r || !r.ok) throw new Error((r && r.error) || 'diagnostics build failed');
+    return r.bundle;
+  }
+
+  function setShareStatus(text) {
+    const el = $('#shareStatus');
+    if (el) el.textContent = text || '';
+  }
+
+  async function shareLogs(channel) {
+    const btn = $('#shareLogs');
+    const label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Bundle ban raha hai…'; }
+    try {
+      const note = ($('#diagNote') && $('#diagNote').value || '').trim();
+      const r = await send({ type: 'LH_SHARE_LOGS', note, channel: channel || 'share' });
+      if (!r || !r.ok) throw new Error((r && r.error) || 'share failed');
+      const files = LeadDiagnostics.build(r.bundle);
+      const subject = LeadDiagnostics.mailSubject(r.bundle);
+      const body = LeadDiagnostics.mailBody(r.bundle, [files.filenameJson]);
+
+      /* 1. Preferred: the system share sheet takes the file, so it really is attached. */
+      const file = new File([files.json], files.filenameJson, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'LeadHarvest diagnostics', text: files.summary });
+          setShareStatus('System share sheet se bhej diya · ' + files.filenameJson);
+          toast('Logs share ho gaye', 'ok');
+          await loadState(); renderLogs(); renderDiag();
+          return;
+        } catch (e) { /* cancelled — fall back to compose */ }
+      }
+
+      /* 2. Otherwise: save the bundle, then open a pre-filled compose window. */
+      await LeadSave.save(files.filenameJson, 'application/json', files.json);
+      try { await LeadSave.save(files.filenameText, 'text/plain', files.text); } catch (e) { /* optional */ }
+      if (channel === 'gmail') window.open(LeadDiagnostics.gmailUrl(subject, body), '_blank');
+      else window.location.href = LeadDiagnostics.mailtoUrl(subject, body);
+      setShareStatus('Bundle saved: ' + files.filenameJson + ' (' + files.sizeKb + ' KB). Compose window me attach kar dein.');
+      toast('Bundle ' + files.filenameJson + ' Downloads me save ho gaya; mail compose khul raha hai', 'ok');
+      await loadState(); renderLogs(); renderDiag();
+    } catch (e) {
+      toast('Share failed: ' + e.message, 'err');
+      setShareStatus('Failed: ' + e.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = label || 'Share logs with developer'; }
+    }
+  }
+
+  async function downloadDiag(kind) {
+    try {
+      const bundle = await diagBundle('download');
+      const files = LeadDiagnostics.build(bundle);
+      if (kind === 'txt') await LeadSave.save(files.filenameText, 'text/plain', files.text);
+      else await LeadSave.save(files.filenameJson, 'application/json', files.json);
+      await send({
+        type: 'LH_LOG_EVENT', event: 'diagnostics_downloaded', level: 'info', scope: 'ui',
+        message: 'Diagnostics downloaded (' + kind + ')', data: { kind, kb: files.sizeKb }
+      });
+      toast(kind === 'txt' ? 'Report download ho gayi' : 'Diagnostics download ho gaye', 'ok');
+      await loadState(); renderLogs(); renderDiag();
+    } catch (e) { toast('Download failed: ' + e.message, 'err'); }
+  }
+
+  if ($('#shareLogs')) $('#shareLogs').addEventListener('click', () => shareLogs('share'));
+  if ($('#mailAppBtn')) $('#mailAppBtn').addEventListener('click', () => shareLogs('mailto'));
+  if ($('#gmailBtn')) $('#gmailBtn').addEventListener('click', () => shareLogs('gmail'));
+  if ($('#downloadDiag')) $('#downloadDiag').addEventListener('click', () => downloadDiag('json'));
+  if ($('#downloadReport')) $('#downloadReport').addEventListener('click', () => downloadDiag('txt'));
+  if ($('#copyDiag')) $('#copyDiag').addEventListener('click', async () => {
+    try {
+      const bundle = await diagBundle('copy');
+      const files = LeadDiagnostics.build(bundle);
+      const ok = await LeadSave.copy(files.summary);
+      toast(ok ? 'Summary clipboard par copy ho gaya' : 'Copy fail hua', ok ? 'ok' : 'err');
+    } catch (e) { toast('Copy failed: ' + e.message, 'err'); }
   });
 
   /* ------------------------------------------------------------- HISTORY */
@@ -651,6 +758,39 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       }
     }
     return false;
+  });
+
+  /* ------------------------------------------------- UI events & errors */
+  function track(event, data) {
+    send({ type: 'LH_LOG_EVENT', event, level: 'info', scope: 'ui', message: event, data: data || {} });
+  }
+  $('#searchBox').addEventListener('change', () => {
+    if (ui.search.trim()) track('filter_used', { type: 'search', query_length: ui.search.trim().length, matched: filteredRecords().length, rejected: S.records.length - filteredRecords().length });
+  });
+  $('#exportFormat').addEventListener('change', () => track('export_format_selected', { format: $('#exportFormat').value }));
+
+  window.addEventListener('error', (e) => {
+    send({
+      type: 'LH_LOG_EVENT', event: 'runtime_error', level: 'error', scope: 'dashboard',
+      message: 'Dashboard error: ' + ((e && e.message) || 'unknown'),
+      data: {
+        error_code: 'dashboard_error',
+        error_message: String((e && e.message) || '').slice(0, 200),
+        stack: (globalThis.LeadTelemetry && LeadTelemetry.sanitizeStack) ? LeadTelemetry.sanitizeStack(e && e.error && e.error.stack) : ''
+      }
+    });
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const reason = e && e.reason;
+    send({
+      type: 'LH_LOG_EVENT', event: 'unhandled_rejection', level: 'error', scope: 'dashboard',
+      message: 'Unhandled rejection in dashboard',
+      data: {
+        error_code: 'dashboard_rejection',
+        error_message: String((reason && reason.message) || reason || '').slice(0, 200),
+        stack: (globalThis.LeadTelemetry && LeadTelemetry.sanitizeStack) ? LeadTelemetry.sanitizeStack(reason && reason.stack) : ''
+      }
+    });
   });
 
   /* ----------------------------------------------------------------- boot */

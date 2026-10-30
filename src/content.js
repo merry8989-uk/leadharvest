@@ -9,6 +9,27 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
 
   const SCHEMA = globalThis.LeadHarvestSchema;
   if (!SCHEMA) return;
+  const T = globalThis.LeadTelemetry || {};
+
+  /* Per-run diagnostics. Only counts and field keys are kept — never a value. */
+  let currentSessionId = '';
+  const diag = { selectorFailures: [], badRegex: 0, invalidJsonLd: 0 };
+
+  function emit(event, opts) {
+    opts = opts || {};
+    try {
+      api.runtime.sendMessage({
+        type: 'LH_LOG_EVENT',
+        event: event,
+        level: opts.level || 'info',
+        scope: opts.scope || 'content',
+        message: opts.message || '',
+        data: opts.data || {},
+        hostname: location.hostname.replace(/^www\./, ''),
+        sessionId: currentSessionId
+      });
+    } catch (e) { /* extension context gone */ }
+  }
 
   /* ------------------------------------------------------------------ text */
   const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
@@ -252,7 +273,10 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
             if (node[k]) walk(node[k], depth + 1);
           });
         })(data, 0);
-      } catch (e) { sendLog('warn', 'jsonld', 'Invalid JSON-LD skipped: ' + e.message); }
+      } catch (e) {
+        diag.invalidJsonLd++;
+        sendLog('warn', 'jsonld', 'Invalid JSON-LD skipped: ' + e.message);
+      }
     });
     return out;
   }
@@ -669,7 +693,10 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
           try {
             const el = scope.querySelector(sel);
             if (el) { const t = elText(el); if (t) { push(t, 0.7, 'selector ' + sel); break; } }
-          } catch (e) { sendLog('warn', 'selector', 'Bad selector "' + sel + '": ' + e.message); }
+          } catch (e) {
+            diag.selectorFailures.push({ field: field.key, selector: String(sel).slice(0, 60), reason: 'invalid_selector' });
+            sendLog('warn', 'selector', 'Bad selector "' + sel + '": ' + e.message);
+          }
         }
         if (!out.length) push(ldValue(ctx.ld, hints.jsonld || []), 0.7, 'json-ld');
         if (!out.length) {
@@ -678,7 +705,10 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
               const re = new RegExp(rx, 'i');
               const m = text.match(re);
               if (m) { push(m[1] || m[0], 0.6, 'regex'); break; }
-            } catch (e) { sendLog('warn', 'regex', 'Bad regex "' + rx + '": ' + e.message); }
+            } catch (e) {
+              diag.badRegex++;
+              sendLog('warn', 'regex', 'Bad regex "' + rx + '": ' + e.message);
+            }
           }
         }
         break;
@@ -745,9 +775,21 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     return { values, fieldMeta: meta, method };
   }
 
-  async function extract(settings) {
+  async function extract(settings, sessionId) {
     const t0 = performance.now();
+    currentSessionId = sessionId || '';
+    diag.selectorFailures.length = 0;
+    diag.badRegex = 0;
+    diag.invalidJsonLd = 0;
     settings = SCHEMA.normalizeSettings(settings);
+    emit('extraction_started', {
+      message: 'Extraction started',
+      data: {
+        fields_enabled: SCHEMA.enabledFields(settings).length,
+        deep_scan: settings.scrape.deepScan !== false,
+        auto_scroll: !!settings.scrape.autoScroll
+      }
+    });
     const fields = SCHEMA.enabledFields(settings);
     const maxRecords = Math.max(1, Math.min(1000, settings.scrape.maxRecords || 200));
 
@@ -863,6 +905,107 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       pageType, records: out.length, ms, url: location.href
     });
 
+    /* ---- diagnostics: counts only, no contact values ---- */
+    const fieldStats = {};
+    fields.forEach(f => { fieldStats[f.key] = { success: 0, missing: 0 }; });
+    out.forEach(r => fields.forEach(f => {
+      if (r.values && r.values[f.key]) fieldStats[f.key].success++;
+      else fieldStats[f.key].missing++;
+    }));
+
+    const domNodes = document.getElementsByTagName('*').length;
+    const domMs = ms;
+    const dynamic = document.querySelectorAll('form').length > 0 || document.querySelectorAll('script[src]').length > 3;
+    const iframes = document.querySelectorAll('iframe').length;
+    const shadowHosts = [...document.querySelectorAll('*')].filter(el => el.shadowRoot).length;
+    const lazyImages = document.querySelectorAll('img[loading="lazy"],img[data-src]').length;
+
+    emit('extraction_completed', {
+      message: 'Extracted ' + out.length + ' record(s) in ' + ms + 'ms',
+      data: {
+        records: out.length,
+        method: out.length ? out[0].method : 'none',
+        page_type: pageType,
+        processing_time_ms: ms,
+        dom_processing_ms: domMs,
+        avg_record_ms: out.length ? Math.round((ms / out.length) * 10) / 10 : 0,
+        fields: fieldStats,
+        selector_failures: diag.selectorFailures.length,
+        invalid_jsonld: diag.invalidJsonLd,
+        bad_regex: diag.badRegex,
+        dom_nodes: domNodes,
+        text_length: fullText.length
+      }
+    });
+
+    if (diag.selectorFailures.length) {
+      const byField = {};
+      diag.selectorFailures.forEach(f => { byField[f.field] = (byField[f.field] || 0) + 1; });
+      emit('selector_failure', {
+        level: 'warn',
+        message: diag.selectorFailures.length + ' selector(s) failed',
+        data: { count: diag.selectorFailures.length, by_field: byField, sample: diag.selectorFailures.slice(0, 5) }
+      });
+    }
+
+    if (T.qualityOf) {
+      emit('quality_report', { message: 'Lead quality snapshot', data: T.qualityOf(out, settings) });
+    }
+
+    emit('site_report', {
+      message: 'Compatibility report for ' + location.hostname,
+      data: {
+        hostname: location.hostname.replace(/^www\./, ''),
+        page_type: pageType,
+        supported: out.length > 0,
+        dom_detected: domNodes > 0,
+        selectors_available: Object.keys(fieldStats).filter(k => fieldStats[k].success > 0).length,
+        dynamic_content: dynamic,
+        infinite_scroll: !!settings.scrape.autoScroll,
+        spa_detected: !!(window.history && history.length > 1 && document.querySelector('[data-reactroot],[ng-version],#__next,#root')),
+        shadow_dom_hosts: shadowHosts,
+        iframes,
+        lazy_images: lazyImages,
+        parser_version: (T.ALGO && T.ALGO.parser) || '',
+        signals: {
+          json_ld: lds.length,
+          tel_links: document.querySelectorAll('a[href^="tel:"]').length,
+          mail_links: document.querySelectorAll('a[href^="mailto:"]').length,
+          tables: document.querySelectorAll('table').length,
+          forms: document.querySelectorAll('form').length
+        }
+      }
+    });
+
+    if (T.memMb) {
+      emit('perf_sample', {
+        message: 'Performance sample',
+        data: {
+          extraction_ms: ms,
+          dom_processing_ms: domMs,
+          avg_record_ms: out.length ? Math.round((ms / out.length) * 10) / 10 : 0,
+          records_per_minute: ms > 0 ? Math.round((out.length / ms) * 60000) : 0,
+          memory_mb: T.memMb(),
+          dom_nodes: domNodes
+        }
+      });
+    }
+
+    if (!out.length) {
+      emit('unsupported_page_structure', {
+        level: 'warn',
+        message: 'No contact data found on ' + location.hostname,
+        data: {
+          page_type: pageType,
+          text_length: fullText.length,
+          tables: document.querySelectorAll('table').length,
+          forms: document.querySelectorAll('form').length,
+          json_ld: lds.length,
+          reason: fullText.length < 400 ? 'page_too_thin_or_js_rendered' : 'no_matching_structure'
+        }
+      });
+    }
+
     return {
       ok: true,
       url: location.href,
@@ -960,7 +1103,16 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     if (!msg || !msg.type) return;
     if (msg.type === 'LH_PING') { sendResponse({ ok: true }); return true; }
     if (msg.type === 'LH_EXTRACT') {
-      extract(msg.settings).then(r => sendResponse(r)).catch(err => {
+      extract(msg.settings, msg.sessionId).then(r => sendResponse(r)).catch(err => {
+        emit('extraction_failed', {
+          level: 'error',
+          message: 'Extraction failed: ' + ((err && err.message) || err),
+          data: {
+            error_code: 'extract_exception',
+            error_message: String((err && err.message) || err).slice(0, 300),
+            stack: T.sanitizeStack ? T.sanitizeStack(err && err.stack) : ''
+          }
+        });
         sendLog('error', 'extract', 'Extraction failed: ' + (err && err.message));
         sendResponse({ ok: false, error: String((err && err.message) || err) });
       });

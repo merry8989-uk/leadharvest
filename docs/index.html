@@ -165,7 +165,13 @@
       <div class="card">
         <span class="ico">🧾</span>
         <h3>Logs &amp; diagnostics</h3>
-        <p>Structured logs for scraping, exporting, settings and errors. Emails and phone numbers are redacted by default, and a one-click diagnostics bundle helps debug a site that misbehaves.</p>
+        <p>Fifteen categories of structured events — lifecycle, sessions, field extraction, quality, duplicates, compatibility, exports, storage, errors, performance and more. Counts only, never contact values.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">📨</span>
+        <h3>Share logs with developer</h3>
+        <p>One tap builds a diagnostic bundle and opens a pre-filled email to the developer. On phones and Windows the file is attached by the system share sheet; elsewhere it is saved and one click away.</p>
       </div>
 
       <div class="card">
@@ -352,6 +358,12 @@
     <div class="note green" style="margin-top:20px">
       <b>Deleting is real.</b> “Clear records”, “Clear history” and “Clear logs” wipe the data immediately, and uninstalling the extension removes everything with it. There is no copy anywhere else.
     </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Diagnostics — and sharing them</h3>
+      <p>Settings → Diagnostics shows what the extension has actually recorded: sessions, extraction success rate, field completeness, duplicates caught, exports, errors, average timing, and a per-site breakdown. Nine live counters, plus a capability report that states plainly which checks this build does and does not perform.</p>
+      <p style="margin-top:10px"><b>“Share logs with developer”</b> builds a bundle and opens a pre-filled email to <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a>. You can add a note about what went wrong. The bundle contains counts, hostnames, timings and technical signals — <b>no email address, phone number, contact name or page text</b>. Nothing is sent until you press the button, and the email goes out through your own mail client, not through us.</p>
+    </div>
   </div>
 </section>
 
@@ -430,6 +442,11 @@
     <details>
       <summary>Hindi or Tamil text turns into question marks in the PDF.</summary>
       <div class="inner"><p>The built-in PDF writer uses the standard PDF fonts, which only cover Latin script. For Indic scripts, export as HTML and print to PDF from the browser, or use the “Print / PDF” button — the browser has the right fonts.</p></div>
+    </details>
+
+    <details>
+      <summary>How do I report a bug?</summary>
+      <div class="inner"><p>Open the dashboard → <b>Settings → Diagnostics</b>, type one line about what went wrong (which site, which field), and press <b>Share logs with developer</b>. A bundle is generated and your mail client opens pre-filled to br19shc39@gmail.com. The bundle has counts and hostnames only — never the contacts you scraped.</p></div>
     </details>
 
     <details>

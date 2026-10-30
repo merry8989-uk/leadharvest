@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(process.argv[2] || '.');
-const SKIP = new Set(['node_modules', '.git', 'tools', '.github']);
+const SKIP = new Set(['node_modules', '.git', 'tools', '.github', 'dist']);
 const results = [];
 const add = (level, id, title, detail) => results.push({ level, id, title, detail });
 

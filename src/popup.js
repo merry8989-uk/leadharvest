@@ -54,6 +54,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
 
   async function scrape() {
     if (!activeTab) return;
+    track('scrape_clicked', { trigger: 'popup' });
     $('scrapeBtn').disabled = true;
     $('scrapeBtn').textContent = 'Scraping…';
     try {
@@ -118,5 +119,19 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     api.runtime.sendMessage({ type: 'LH_SET_SETTINGS', settings: s });
   });
 
-  (async () => { await loadTab(); await loadState(); })();
+  function track(event, data) {
+    try {
+      api.runtime.sendMessage({
+        type: 'LH_LOG_EVENT', event, level: 'info', scope: 'ui',
+        message: event, data: data || {},
+        hostname: (activeTab && activeTab.url) ? LeadTelemetry.sanitizeUrl(activeTab.url) : ''
+      });
+    } catch (e) { /* context gone */ }
+  }
+
+  (async () => {
+    await loadTab();
+    await loadState();
+    track('popup_opened', { records_stored: state.records.length, tab_available: !!(activeTab && activeTab.url) });
+  })();
 })();

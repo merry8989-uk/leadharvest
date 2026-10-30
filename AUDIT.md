@@ -1,7 +1,7 @@
-# Audit & Firefox (AMO) readiness — LeadHarvest v1.1.0
+# Audit & Firefox (AMO) readiness — LeadHarvest v1.2.0
 
 Date: 30 October 2026 · Auditor: automated static audit + manual code review
-Scope: full source tree (`manifest.json`, `src/**`, `icons/**`) — 21 files, ~180 KB
+Scope: full source tree (`manifest.json`, `src/**`, `icons/**`) — 24 files, ~230 KB
 
 ---
 
@@ -79,10 +79,13 @@ no `bookmarks`, no `tabs` permission, and no remote host permission.
    sites. Mitigated by removing automatic injection and by not requesting the `tabs` permission.
    A user who wants to narrow it can set "On specific sites" in the browser's extension settings.
 2. **Data-collection declaration vs. code.** The core never transmits anything, so `required` is
-   `["none"]`. The optional cloud AI advisor does send a short page summary (page title + technical
-   signals, never the HTML or the scraped records) to an endpoint the user configures with their own
-   key, so it is declared under `optional: ["websiteContent"]`. Both the manifest and the privacy
-   policy state this consistently.
+   `["none"]`. Two optional, user-initiated features do transmit something, and both are declared:
+   - `websiteContent` — the cloud AI advisor sends a short page summary (title + technical signals,
+     never the HTML or the scraped records) to an endpoint the user configures with their own key.
+   - `browsingActivity` + `technicalAndInteraction` — "Share logs with developer" puts site hostnames
+     and technical counters into a bundle that the user then sends through their own mail client.
+   Nothing is transmitted until the user acts, and the extension itself never uploads anything.
+   Manifest, privacy policy and this document state the same thing.
 
 If AMO's validator rejects the `optional` key on submission, delete that one line — the `required:
 ["none"]` declaration remains correct for the default configuration.
@@ -111,6 +114,29 @@ point.
 **Not present, and worth stating for the record:** no `eval`, no `new Function`, no remote script or
 style tags, no dynamic `import()` of a remote URL, no WebSocket, no `XMLHttpRequest`, no
 obfuscation, no analytics SDK, no third-party library.
+
+---
+
+## 5a. Telemetry review (added in 1.2.0)
+
+The extension records 57 event types across 15 categories. The design rule, enforced in three
+places, is that an event carries **counts and status, never values**:
+
+1. **Producers** pass counts and booleans — `fields: { email: { success: 32, missing: 18 } }`, never
+   an address. The content script has no code path that puts a scraped value into an event.
+2. **`LeadTelemetry.redact()`** runs over every event on the way into storage: emails → `[email]`,
+   phone-shaped digit runs → `[number]`, anything matching `pass|secret|token|apikey|authorization|cookie`
+   → `[redacted]`. Stacks are truncated to 8 frames and URLs reduced to origin + path.
+3. **`LeadTelemetry.sanitizeUrl()`** reduces every URL to a hostname before it is stored, so a query
+   string containing an email or a search term never lands in a log.
+
+The diagnostics bundle is built from that store, so it inherits all three guarantees. A test asserts
+that a scrape containing `info@example.com` and `+919876543210` produces a log store with neither
+string present.
+
+`AUDIT` §6 item 7 tells the reviewer this in one paragraph. Capability gaps are stated in the bundle
+itself (`pagination`, `filters`, `backend_sync`, `database` are marked unsupported) rather than
+faked.
 
 ---
 
@@ -146,5 +172,6 @@ obfuscation, no analytics SDK, no third-party library.
 
 | Version | Notes |
 |---|---|
+| 1.2.0 | Full diagnostic telemetry (57 event types, 15 categories), running metrics with the rates from the logging checklist, capability report, and a "Share logs with developer" flow that composes a pre-filled mail to the maintainer; data-collection declaration extended for the optional share |
 | 1.1.0 | Cross-browser build (Firefox 140+ / Chrome 121+), data-collection declaration, no automatic content-script injection, escaping and `document.write` fixes, audit tooling |
 | 1.0.0 | First Chrome release |

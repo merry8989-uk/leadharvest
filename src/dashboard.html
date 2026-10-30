@@ -159,13 +159,37 @@
           <p class="muted small" id="storageLine">—</p>
           <div class="row wrap">
             <button class="btn" id="saveSettings">Save settings</button>
-            <button class="btn" id="diagnostics">Download diagnostics</button>
             <button class="btn btn-danger" id="clearRecords">Clear records</button>
             <button class="btn btn-danger" id="clearHistory">Clear history</button>
             <button class="btn btn-danger" id="clearLogs">Clear logs</button>
           </div>
           <p class="hint">Sab data aapke browser ki local storage me hai. Koi server nahi, koi account nahi.</p>
         </div>
+      </div>
+
+      <!-- diagnostics / share logs -->
+      <div class="panel" id="diagPanel" style="margin-top:14px">
+        <h2>Diagnostics — logs share karein</h2>
+        <p class="muted small">Extension jo bhi events collect karta hai (scraping sessions, field extraction success/missing counts, duplicates, exports, storage, errors, performance, website compatibility) wo sab yahan se ek bundle me nikal sakte hain. Bundle me <b>koi email, phone, naam ya page text nahi hota</b> — sirf counts, hostname aur technical signals.</p>
+        <div class="grid3" id="diagStats"></div>
+        <p class="small muted" id="diagMeta" style="margin-top:10px"></p>
+
+        <label class="field" style="margin-top:6px">
+          <span>Kya problem aayi? (optional — email me jayega)</span>
+          <textarea id="diagNote" rows="3" placeholder="jaise: is directory page par email column nahi mila — https://example.com/suppliers"></textarea>
+        </label>
+
+        <div class="row wrap">
+          <button class="btn btn-primary" id="shareLogs">Share logs with developer</button>
+          <button class="btn" id="mailAppBtn">Email app me kholo</button>
+          <button class="btn" id="gmailBtn">Gmail me kholo</button>
+          <button class="btn" id="downloadDiag">Download diagnostics (JSON)</button>
+          <button class="btn" id="downloadReport">Download report (TXT)</button>
+          <button class="btn" id="copyDiag">Copy summary</button>
+        </div>
+
+        <p class="hint" id="shareHint">Tap karte hi bundle ban kar <b>br19shc39@gmail.com</b> par compose ho jayega. Desktop par file Downloads me save hoti hai — compose window me attach kar dein. Phone / Windows par file seedha attach ho jati hai (system share sheet).</p>
+        <p class="small muted" id="shareStatus"></p>
       </div>
     </section>
 
@@ -230,6 +254,8 @@
   <script src="lib/exporter.js"></script>
   <script src="lib/download.js"></script>
   <script src="lib/advisor.js"></script>
+  <script src="lib/telemetry.js"></script>
+  <script src="lib/diagnostics.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

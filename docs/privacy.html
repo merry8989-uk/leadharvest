@@ -114,19 +114,32 @@
     </table>
   </div>
 
-  <h2>7. Exports</h2>
+  <h2>7. Sharing diagnostics with the developer</h2>
+  <p>Settings → Diagnostics has a button labelled <b>Share logs with developer</b>. It does nothing until you press it. When you do, the extension builds a diagnostic bundle and hands it to <i>your own</i> email app, addressed to
+  <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a>. The extension itself uploads nothing — the message leaves through your mail client, and you can read, edit, add to or delete it before sending.</p>
+  <p>The bundle contains:</p>
+  <ul>
+    <li>counts and rates — sessions started/completed/failed, records extracted, per-field success and missing counts, duplicates, exports, errors;</li>
+    <li>site <b>hostnames</b> only (never full URLs, never page text);</li>
+    <li>timings, browser name and version, operating system, extension version;</li>
+    <li>your settings <i>shape</i> — which fields are enabled, which options are on — and whether an API key is set (never the key itself);</li>
+    <li>the note you typed, if any.</li>
+  </ul>
+  <p>It does <b>not</b> contain any email address, phone number, contact name, address, page content or API key that the extension holds. A capability report inside the bundle states which checks this build performs and which it does not, so nothing is silently missing.</p>
+
+  <h2>8. Exports</h2>
   <p>When you export, the file is generated inside your browser and written to your Downloads folder by the
   browser's own download manager. It is not uploaded anywhere. Once the file exists on your disk, it is your
   responsibility — treat exported contact lists like any other personal data.</p>
 
-  <h2>8. How long data is kept, and how to delete it</h2>
+  <h2>9. How long data is kept, and how to delete it</h2>
   <p>Data is kept until you delete it. In the dashboard, <i>Settings → Data on this device</i> has
   <b>Clear records</b>, <b>Clear history</b> and <b>Clear logs</b>, each of which wipes that store immediately and
   irreversibly. Removing the extension from your browser deletes all of it as well. Because nothing is stored on a
   server, there is no copy for us to delete and no deletion request to file — but you are welcome to write if you
   want confirmation of how this works.</p>
 
-  <h2>9. Your rights and your own obligations</h2>
+  <h2>10. Your rights and your own obligations</h2>
   <p>Because we hold no data about you, there is nothing for us to disclose, correct or erase on our side. Your
   records are in your hands, which also means the obligations that come with them are yours: if you collect other
   people's contact details, you are the one processing their personal data. In India that means the Digital
@@ -134,23 +147,23 @@
   it, and honour requests to erase it. Elsewhere, equivalent rules such as the GDPR apply. Respect the terms of
   service of the sites you read, and their <code>robots.txt</code>.</p>
 
-  <h2>10. Children</h2>
+  <h2>11. Children</h2>
   <p>The extension is a business tool and is not directed at children. It does not knowingly collect any
   information about anyone, including children.</p>
 
-  <h2>11. Security</h2>
+  <h2>12. Security</h2>
   <p>The extension contains no remote code, no <code>eval</code>, no obfuscation and no third-party libraries — the
   source you can read is exactly what runs. All values rendered into the dashboard are HTML-escaped before they are
   displayed, so a malicious page cannot inject markup into the extension's own UI. Your API key, if you set one, is
   stored in the same local storage as everything else; anyone with access to your browser profile can read it, so
   treat it like a saved password and revoke it if you stop using cloud mode.</p>
 
-  <h2>12. Changes to this policy</h2>
+  <h2>13. Changes to this policy</h2>
   <p>If a future version changes what is stored or transmitted, this page will be updated and the version number
   and date at the top will change. Material changes will also be noted in the extension's release notes. Continuing
   to use a new version means you accept the policy published with it.</p>
 
-  <h2>13. Contact</h2>
+  <h2>14. Contact</h2>
   <p>Questions, corrections or a site that needs a selector preset:<br>
   <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a><br>
   Instagram: <a href="https://www.instagram.com/osintgram_io/" target="_blank" rel="noopener me">@osintgram_io</a></p>
