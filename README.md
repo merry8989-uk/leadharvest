@@ -182,6 +182,7 @@ leadharvest/
 ├── README.md
 ├── AUDIT.md               # security audit + AMO submission checklist
 ├── STORE.md               # AMO + Chrome Web Store listing copy (paste-ready)
+├── UPDATES.md             # AMO auto-update vs self-hosted update_url (dono raste)
 ├── LICENSE                # All rights reserved (MIT me badalna ho to bata dein)
 ├── build.sh               # dist/ zips banata hai
 ├── icons/                 # 16/32/48/128 PNG
@@ -219,7 +220,19 @@ demo data ke saath), mockups nahi. Dobara banane ke liye: `node tools/shots.js` 
 
 ---
 
-## 13. Build & verify
+## 13. Updates
+
+- **AMO par listed** (recommended): `update_url` ki zaroorat nahi — Mozilla khud update deta hai.
+  Naya version upload karte rehne se users ko automatic mil jata hai.
+- **Self-hosted**: `bash build.sh --self-hosted` se aisa build banta hai jisme
+  `browser_specific_settings.gecko.update_url` set hota hai, aur `docs/updates.json` har build par
+  regenerate hota hai (version + HTTPS link + sha256). Poora guide: `UPDATES.md`.
+
+`docs/updates.json` live URL: https://merry8989-uk.github.io/leadharvest/updates.json
+
+---
+
+## 14. Build & verify
 
 ```bash
 bash build.sh                      # dist/ me extension + source zip
@@ -229,7 +242,7 @@ npx web-ext@latest lint --source-dir .   # Mozilla ka addons-linter (AMO wahi ch
 
 ---
 
-## 14. Aage kya add ho sakta hai
+## 15. Aage kya add ho sakta hai
 
 Multi-page crawl (list → detail), CRM push (HubSpot/Zoho/Sheets), email/phone validation, duplicate
 merge UI, scheduled re-scrape, CSV column mapping, cloud sync.

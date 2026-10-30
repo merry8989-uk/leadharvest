@@ -1,0 +1,19 @@
+{
+  "addons": {
+    "leadharvest@br19shc39.gmail.com": {
+      "updates": [
+        {
+          "version": "1.3.0",
+          "update_link": "https://github.com/merry8989-uk/leadharvest/releases/download/v1.3.0/leadharvest-extension-v1.3.0.zip",
+          "update_hash": "sha256:ade79f76744154c042f7a452a79785a1a2109c530878e114deb541e877c0e83a",
+          "update_info_url": "https://merry8989-uk.github.io/leadharvest/",
+          "applications": {
+            "gecko": {
+              "strict_min_version": "140.0"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
