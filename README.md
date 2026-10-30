@@ -12,6 +12,8 @@ hai: koi server nahi, koi account nahi, koi telemetry nahi.
 - **Landing page / feature docs:** https://merry8989-uk.github.io/leadharvest/ (`docs/index.html`)
 - **Privacy policy:** https://merry8989-uk.github.io/leadharvest/privacy.html (`docs/privacy.html`)
 - Source repository: https://github.com/merry8989-uk/leadharvest
+- **Licence: MIT** — free to use, modify, redistribute and ship commercially; keep the copyright
+  notice, and there is no warranty. The name "LeadHarvest" and the icon are not covered by it.
 - Security / AMO audit report: `AUDIT.md`
 - Audit chalaane ke liye: `node tools/audit.js .`
 

@@ -16,7 +16,7 @@ the shipped build; nothing here promises a feature the code does not have.
 | Privacy policy URL | https://merry8989-uk.github.io/leadharvest/privacy.html |
 | Support email | br19shc39@gmail.com |
 | Source code | https://github.com/merry8989-uk/leadharvest |
-| Licence | `LICENSE` in the repo (All rights reserved) — on AMO pick **“Custom licence”** and use this file, or switch the repo to MIT first |
+| Licence | **MIT** — on AMO just pick **MIT License** from the list, no custom text needed. The repo `LICENSE` file is the standard MIT text. |
 | Category | AMO: *Productivity* · CWS: *Productivity / Tools* |
 | Tags | contacts, scraper, lead generation, export, excel, csv, pdf, local-first, privacy |
 
@@ -197,6 +197,6 @@ eight export formats, local history, diagnostic telemetry with a share-to-develo
 - [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.2.zip` (manifest at the zip root)
 - [ ] Upload **`leadharvest-extension-v1.3.2.zip`** to AMO → *On this site* (listed). Never upload `leadharvest-SELFHOST-ONLY-*.zip`: it carries `gecko.update_url`, which AMO rejects for listed add-ons.
 - [ ] Optional: upload **`leadharvest-firefox-v1.3.2.zip`** instead if you want a validation with **zero** warnings — it is the same code with `background.service_worker` removed (Firefox does not need it; Chrome does). Keep the normal zip for Chrome/Edge users.
-- [ ] Fill the fields above, upload the five screenshots, set the licence
+- [ ] Fill the fields above, upload the five screenshots, set the licence to **MIT License**
 - [ ] Paste §5 into the reviewer notes
 - [ ] After signing, replace the “Download” button on the site with the AMO install link
