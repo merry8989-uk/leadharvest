@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer-core');
 const path = require('path');
 const fs = require('fs');
 
-const EXT = __dirname;
+const EXT = path.join(__dirname, '..');
 const OUT = path.join(EXT, 'docs/assets');
 const T = require(path.join(EXT, 'src/lib/telemetry.js'));
 const S = require(path.join(EXT, 'src/lib/schema.js'));

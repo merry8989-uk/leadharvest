@@ -213,7 +213,7 @@ client se jata hai, extension khud kuch upload nahi karta.
 ## 12. Screenshots
 
 `docs/assets/shot-*.png` — ye asli UI ke renders hain (headless Chromium me extension ke apne HTML se,
-demo data ke saath), mockups nahi. Dobara banane ke liye: `node shots.js` (source zip me shaamil hai).
+demo data ke saath), mockups nahi. Dobara banane ke liye: `node tools/shots.js` (puppeteer-core + local Chromium chahiye).
 
 ---
 
