@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy — LeadHarvest</title>
+<meta name="description" content="LeadHarvest privacy policy: what the extension stores on your device, what it never collects, and the single optional network request you can enable yourself.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%234f46e5'/%3E%3Cpath d='M14 17h36L37 34v13l-10 6V34z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">LH</span> LeadHarvest</a>
+    <nav>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#install">Install</a>
+      <a href="index.html#about">About</a>
+      <a href="privacy.html">Privacy</a>
+    </nav>
+  </div>
+</header>
+
+<main class="doc">
+  <h1 style="font-size:2rem">Privacy Policy</h1>
+  <div class="updated">
+    <b>LeadHarvest — Website Data Collector</b><br>
+    Version 1.1.0 · Last updated 30 October 2026 · Applies to the Chrome/Edge and Firefox builds.
+  </div>
+
+  <div class="note green">
+    <b>The short version.</b> LeadHarvest runs entirely in your browser. It has no servers, no accounts and no
+    analytics. The contacts you scrape, your history and your logs are stored on your own device and are never
+    sent to us or to anyone else. There is exactly one optional network feature — the cloud AI advisor — and it
+    stays off until you personally add an API key and switch it on.
+  </div>
+
+  <h2>1. Who this policy is from</h2>
+  <p>LeadHarvest is an independent browser extension built and maintained by <b>Amit</b>. For any question about
+  this policy, or to ask for something to be corrected or deleted, write to
+  <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a>.</p>
+
+  <h2>2. What the extension does</h2>
+  <p>When you click the scrape button, the extension reads the page you are currently viewing and looks for contact
+  information: names, phone numbers, email addresses, designations, company names and postal addresses. It builds
+  one or more records from what it finds, shows them to you in a dashboard, and can export them to a file on your
+  device. This processing happens in the page's own context inside your browser. The page content is not
+  transmitted anywhere as part of this process.</p>
+
+  <h2>3. What is stored on your device</h2>
+  <p>Everything below lives in your browser's local extension storage (<code>chrome.storage.local</code> in Chrome
+  and Edge, <code>storage.local</code> in Firefox). It stays on that device and is readable only by this extension
+  inside that browser profile.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:150px">Stored item</th><th>What it contains</th><th style="width:150px">Why</th></tr></thead>
+      <tbody>
+        <tr><td><b>Records</b></td><td>The contact details you scraped, their confidence scores, the source URL, the page title and a timestamp. Up to 5,000 records.</td><td>So your list survives closing the browser and can be exported later.</td></tr>
+        <tr><td><b>History</b></td><td>One entry per scrape: time, URL, page title, page type, extraction method, record count, duration and the export format used. Up to 500 entries.</td><td>So you can see what was scraped when, and re-export a past scrape.</td></tr>
+        <tr><td><b>Logs</b></td><td>Diagnostic events (scrape, export, settings changes, errors) with a level, a scope and small technical details. Up to 800 entries by default.</td><td>To debug a site that misbehaves.</td></tr>
+        <tr><td><b>Settings</b></td><td>Your field schema, scrape options, export preferences and — only if you choose cloud AI — the endpoint, model name and API key you entered.</td><td>So the extension behaves the same next time.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Log redaction</h3>
+  <p>Log entries pass through a redaction step before they are written: email addresses become
+  <code>[email]</code> and phone numbers become <code>[number]</code>. This is on by default and can be turned off
+  in Settings, but there is no reason to. Logs never contain page content beyond short technical summaries.</p>
+
+  <h2>4. What is never collected</h2>
+  <ul class="ticks">
+    <li>No account, sign-up, name or email address is required to use the extension.</li>
+    <li>No analytics, crash reporting, telemetry, fingerprinting or advertising identifiers.</li>
+    <li>No browsing history, no list of the sites you visit, no keystroke or form data.</li>
+    <li>No page content is uploaded, not even the pages you scrape.</li>
+    <li>Nothing is sold, rented or shared with data brokers — there is nothing to share.</li>
+  </ul>
+
+  <h2>5. Network requests</h2>
+  <p><b>Default configuration: zero network requests.</b> With the AI advisor set to “Local rules” (the default),
+  the extension never opens a connection of its own. It does not load remote scripts, fonts, images or styles —
+  every file it uses ships inside the extension package.</p>
+
+  <p><b>The one exception you can enable yourself: cloud AI.</b> If you go to <i>AI advisor → Cloud AI</i> and add
+  an API key, the extension will send a request to the endpoint you chose when you press a button that asks for
+  advice. That request contains:</p>
+  <ul>
+    <li>a short summary of the page's technical signals (how many <code>tel:</code> links, whether tables or
+      structured data exist, the page type),</li>
+    <li>the page title,</li>
+    <li>the list of available field names, so the model can answer in a usable shape.</li>
+  </ul>
+  <p>It does <b>not</b> contain the full page HTML, your scraped records, your history or your logs. The request goes
+  directly from your browser to the provider you selected (Sarvam AI, OpenAI, Groq or your own endpoint) using your
+  key; that provider's own privacy policy governs what happens on their side. Turn cloud AI off and no request is
+  ever made.</p>
+
+  <h2>6. Permissions and why each one is needed</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:170px">Permission</th><th>Why the extension asks for it</th></tr></thead>
+      <tbody>
+        <tr><td><code>storage</code></td><td>To keep your records, history, logs and settings on your device.</td></tr>
+        <tr><td><code>unlimitedStorage</code></td><td>So a large contact list does not hit the small default quota and silently fail to save.</td></tr>
+        <tr><td><code>scripting</code> + <code>activeTab</code></td><td>To inject the extractor into the page you asked it to read. Injection happens only when you click scrape, never in the background.</td></tr>
+        <tr><td><code>downloads</code></td><td>To save an exported Excel, CSV, PDF or TXT file to your Downloads folder.</td></tr>
+        <tr><td><code>contextMenus</code></td><td>To add the right-click “scrape this page” entry.</td></tr>
+        <tr><td><code>&lt;all_urls&gt;</code> (site access)</td><td>The whole point is to read whichever page you are on, so the extension must be able to reach any site. It declares no automatic content scripts; nothing runs on a page until you act. You can narrow this at any time in your browser's extension settings.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>7. Exports</h2>
+  <p>When you export, the file is generated inside your browser and written to your Downloads folder by the
+  browser's own download manager. It is not uploaded anywhere. Once the file exists on your disk, it is your
+  responsibility — treat exported contact lists like any other personal data.</p>
+
+  <h2>8. How long data is kept, and how to delete it</h2>
+  <p>Data is kept until you delete it. In the dashboard, <i>Settings → Data on this device</i> has
+  <b>Clear records</b>, <b>Clear history</b> and <b>Clear logs</b>, each of which wipes that store immediately and
+  irreversibly. Removing the extension from your browser deletes all of it as well. Because nothing is stored on a
+  server, there is no copy for us to delete and no deletion request to file — but you are welcome to write if you
+  want confirmation of how this works.</p>
+
+  <h2>9. Your rights and your own obligations</h2>
+  <p>Because we hold no data about you, there is nothing for us to disclose, correct or erase on our side. Your
+  records are in your hands, which also means the obligations that come with them are yours: if you collect other
+  people's contact details, you are the one processing their personal data. In India that means the Digital
+  Personal Data Protection Act, 2023 — collect only what you need for a lawful purpose, keep it accurate, secure
+  it, and honour requests to erase it. Elsewhere, equivalent rules such as the GDPR apply. Respect the terms of
+  service of the sites you read, and their <code>robots.txt</code>.</p>
+
+  <h2>10. Children</h2>
+  <p>The extension is a business tool and is not directed at children. It does not knowingly collect any
+  information about anyone, including children.</p>
+
+  <h2>11. Security</h2>
+  <p>The extension contains no remote code, no <code>eval</code>, no obfuscation and no third-party libraries — the
+  source you can read is exactly what runs. All values rendered into the dashboard are HTML-escaped before they are
+  displayed, so a malicious page cannot inject markup into the extension's own UI. Your API key, if you set one, is
+  stored in the same local storage as everything else; anyone with access to your browser profile can read it, so
+  treat it like a saved password and revoke it if you stop using cloud mode.</p>
+
+  <h2>12. Changes to this policy</h2>
+  <p>If a future version changes what is stored or transmitted, this page will be updated and the version number
+  and date at the top will change. Material changes will also be noted in the extension's release notes. Continuing
+  to use a new version means you accept the policy published with it.</p>
+
+  <h2>13. Contact</h2>
+  <p>Questions, corrections or a site that needs a selector preset:<br>
+  <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a><br>
+  Instagram: <a href="https://www.instagram.com/osintgram_io/" target="_blank" rel="noopener me">@osintgram_io</a></p>
+
+  <p class="small muted" style="margin-top:36px"><a href="index.html">← Back to LeadHarvest</a></p>
+</main>
+
+<footer>
+  <div class="wrap frow">
+    <div><a class="brand" href="index.html" style="color:#fff"><span class="mark">LH</span> LeadHarvest</a></div>
+    <div class="small" style="display:flex;gap:18px;flex-wrap:wrap">
+      <a href="index.html#features">Features</a>
+      <a href="index.html#install">Install</a>
+      <a href="privacy.html">Privacy policy</a>
+      <a href="mailto:br19shc39@gmail.com">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

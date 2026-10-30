@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LeadHarvest — Dashboard</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="dash">
+  <header class="topbar">
+    <div class="brand"><div class="lh-logo">LH</div><span>LeadHarvest</span><span class="ver" id="ver">v1.1.0</span></div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="data" class="active">Data</button>
+      <button data-tab="schema">Data structure</button>
+      <button data-tab="ai">AI advisor</button>
+      <button data-tab="settings">Settings</button>
+      <button data-tab="history">History</button>
+      <button data-tab="logs">Logs</button>
+      <button data-tab="help">Help</button>
+    </nav>
+    <span class="spacer"></span>
+    <button class="btn btn-primary btn-sm" id="scrapeHere">Scrape current tab</button>
+  </header>
+
+  <main>
+    <!-- ================= DATA ================= -->
+    <section class="tab active" id="tab-data">
+      <div class="toolbar">
+        <input type="text" id="searchBox" placeholder="Search name, phone, email, company, city…" style="max-width:300px">
+        <span class="chip" id="dataCount">0 records</span>
+        <span class="spacer"></span>
+        <select id="exportFormat" style="width:160px" title="Export format">
+          <option value="xlsx">Excel (.xlsx)</option>
+          <option value="csv">CSV</option>
+          <option value="pdf">PDF</option>
+          <option value="txt">TXT</option>
+          <option value="md">Notes (.md)</option>
+          <option value="json">JSON</option>
+          <option value="html">HTML (print)</option>
+        </select>
+        <button class="btn btn-primary" id="exportSel">Export selected</button>
+        <button class="btn" id="exportAll">Export all</button>
+        <button class="btn" id="copyBtn">Copy</button>
+        <button class="btn" id="printBtn">Print / PDF</button>
+        <button class="btn btn-danger" id="deleteSel">Delete selected</button>
+      </div>
+      <div class="tablewrap"><table id="dataTable"><thead></thead><tbody></tbody></table></div>
+      <p class="hint">Cell par click karke value edit kar sakte hain (auto-save). Column header par click se sorting hoti hai. Neeche wali export bar aapke Data structure (Schema tab) ke hisaab se columns banati hai.</p>
+    </section>
+
+    <!-- ================= SCHEMA ================= -->
+    <section class="tab" id="tab-schema">
+      <div class="panel" style="margin-bottom:14px">
+        <h2>Data structure — kaunsa data collect karna hai</h2>
+        <p class="muted small">Yahan tay karein ki scrape karte waqt kaunse fields bharne hain, unka naam kya dikhega (Excel/PDF me), kaunsa field zaroori hai, aur agar kisi site par automatic detection fail ho raha ho to apna CSS selector ya regex de dein. Sab kuch aapke device par hi save hota hai.</p>
+        <div class="toolbar" style="margin:0">
+          <button class="btn" id="addField">+ Custom field</button>
+          <button class="btn" id="resetSchema">Reset to defaults</button>
+          <button class="btn" id="exportSchema">Export schema JSON</button>
+          <button class="btn" id="importSchema">Import schema JSON</button>
+          <span class="spacer"></span>
+          <label class="row small muted" style="font-weight:600"><input type="checkbox" id="showDisabled" checked> disabled fields bhi dikhao</label>
+        </div>
+      </div>
+      <div id="fieldList"></div>
+      <div class="panel">
+        <h3>Preset: kaam ke hisaab se</h3>
+        <p class="muted small">Ek click me fields ka set bana lein.</p>
+        <div class="row wrap">
+          <button class="btn" data-preset="phonebook">Phone book (naam + phone + address)</button>
+          <button class="btn" data-preset="b2b">B2B leads (naam + designation + company + email + phone)</button>
+          <button class="btn" data-preset="full">Sab kuch (maximum fields)</button>
+          <button class="btn" data-preset="directory">Directory / listing (company + city + category)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= AI ================= -->
+    <section class="tab" id="tab-ai">
+      <div class="grid2">
+        <div class="panel">
+          <h2>AI advisor — kaunsa data zaroori hai</h2>
+          <p class="muted small">Yeh module page ke signals (JSON-LD, tel/mailto links, tables, page type) dekh kar batata hai ki kaunse fields scrape karna sabse zyada useful rahega. <b>Local mode</b> bilkul offline chalta hai — koi API key nahi chahiye, koi data bahar nahi jata. <b>Cloud mode</b> optional hai.</p>
+          <label class="field"><span>Mode</span>
+            <select id="aiMode">
+              <option value="off">Off</option>
+              <option value="local">Local rules (offline, recommended)</option>
+              <option value="cloud">Cloud AI (aapki API key)</option>
+            </select>
+          </label>
+          <div id="cloudBox">
+            <label class="field"><span>Provider preset</span>
+              <select id="aiProvider">
+                <option value="sarvam">Sarvam AI</option>
+                <option value="openai">OpenAI</option>
+                <option value="groq">Groq</option>
+                <option value="custom">Custom (OpenAI-compatible)</option>
+              </select>
+            </label>
+            <label class="field"><span>Endpoint URL</span><input type="url" id="aiBaseUrl" placeholder="https://api.sarvam.ai/v1/chat/completions"></label>
+            <label class="field"><span>Model</span><input type="text" id="aiModel" placeholder="sarvam-105b"></label>
+            <label class="field"><span>API key</span><input type="password" id="aiKey" placeholder="sk-… (sirf aapke browser me save hoti hai)">
+              <div class="hint">Key sirf chrome.storage.local me rehti hai aur seedha provider ko bheji jaati hai. Page ka pura HTML nahi, sirf chhota summary bhejta hai.</div>
+            </label>
+            <div class="row"><button class="btn" id="testAi">Test connection</button><span id="aiTestOut" class="small muted"></span></div>
+          </div>
+          <label class="row small" style="margin-top:10px;font-weight:600"><input type="checkbox" id="aiAuto"> Har scrape ke baad suggestion dikhao</label>
+          <div class="row" style="margin-top:12px">
+            <button class="btn btn-primary" id="runAdvisor">Analyze last scraped page</button>
+            <button class="btn" id="scrapeAndAnalyze">Scrape current tab + analyze</button>
+          </div>
+        </div>
+        <div class="panel" id="advisorOut">
+          <h3>Suggestion</h3>
+          <p class="muted small">Abhi koi analysis nahi. "Analyze last scraped page" dabayein.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section class="tab" id="tab-settings">
+      <div class="grid2">
+        <div class="panel">
+          <h2>Scraping</h2>
+          <label class="field"><span>Max records per page</span><input type="number" id="maxRecords" min="1" max="1000"></label>
+          <label class="row small" style="font-weight:600"><input type="checkbox" id="dedupe"> Duplicate records hatao</label>
+          <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="autoScroll"> Scrape se pehle page auto-scroll karo (lazy-load content ke liye)</label>
+          <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="deepScan"> Deep scan (JSON-LD, microdata, tables, meta)</label>
+          <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="blockLocalhost"> Localhost / internal pages block karo</label>
+        </div>
+        <div class="panel">
+          <h2>Output</h2>
+          <div class="grid2">
+            <label class="field"><span>Default format</span>
+              <select id="outFormat">
+                <option value="xlsx">Excel (.xlsx)</option><option value="csv">CSV</option><option value="pdf">PDF</option>
+                <option value="txt">TXT</option><option value="md">Notes (.md)</option><option value="json">JSON</option><option value="html">HTML</option>
+              </select>
+            </label>
+            <label class="field"><span>CSV delimiter</span>
+              <select id="delimiter"><option value=",">Comma (,)</option><option value=";">Semicolon (;)</option><option value="\t">Tab</option></select>
+            </label>
+          </div>
+          <label class="field"><span>File name template</span><input type="text" id="fileNameTemplate">
+            <div class="hint">Available: {domain} {date} {time} {count}</div>
+          </label>
+          <label class="field"><span>PDF paper</span><select id="pdfPaper"><option value="a4">A4</option><option value="letter">Letter</option></select></label>
+          <label class="row small" style="font-weight:600"><input type="checkbox" id="includeHeader"> Header row include karo</label>
+        </div>
+        <div class="panel">
+          <h2>Logs (extension improve karne ke liye)</h2>
+          <p class="muted small">Har scrape, export, error aur setting change ka record. Personal data (email/phone) default me redact ho jata hai.</p>
+          <label class="row small" style="font-weight:600"><input type="checkbox" id="logEnabled"> Logging on</label>
+          <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="logVerbose"> Verbose (debug) logs</label>
+          <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="logRedact"> PII redact karo (recommended)</label>
+          <label class="field" style="margin-top:10px"><span>Max log entries</span><input type="number" id="logMax" min="50" max="5000"></label>
+        </div>
+        <div class="panel">
+          <h2>Data on this device</h2>
+          <p class="muted small" id="storageLine">—</p>
+          <div class="row wrap">
+            <button class="btn" id="saveSettings">Save settings</button>
+            <button class="btn" id="diagnostics">Download diagnostics</button>
+            <button class="btn btn-danger" id="clearRecords">Clear records</button>
+            <button class="btn btn-danger" id="clearHistory">Clear history</button>
+            <button class="btn btn-danger" id="clearLogs">Clear logs</button>
+          </div>
+          <p class="hint">Sab data aapke browser ki local storage me hai. Koi server nahi, koi account nahi.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY ================= -->
+    <section class="tab" id="tab-history">
+      <div class="toolbar">
+        <h2 style="margin:0">Scrape history</h2>
+        <span class="chip" id="histCount">0</span>
+        <span class="spacer"></span>
+        <button class="btn btn-danger" id="clearHistBtn">Clear history</button>
+      </div>
+      <div class="tablewrap"><table id="histTable"><thead></thead><tbody></tbody></table></div>
+      <p class="hint">Har scrape ka time, page, method aur kitne records mile — sab yahan. "Export" se us scrape ke records dobara nikal sakte hain.</p>
+    </section>
+
+    <!-- ================= LOGS ================= -->
+    <section class="tab" id="tab-logs">
+      <div class="toolbar">
+        <h2 style="margin:0">Logs</h2>
+        <select id="logLevel" style="width:140px"><option value="">All levels</option><option value="error">Errors</option><option value="warn">Warnings</option><option value="info">Info</option><option value="debug">Debug</option></select>
+        <input type="text" id="logSearch" placeholder="Search logs…" style="max-width:240px">
+        <span class="spacer"></span>
+        <button class="btn" id="exportLogs">Export logs (JSON)</button>
+        <button class="btn" id="exportLogsTxt">Export logs (TXT)</button>
+        <button class="btn btn-danger" id="clearLogsBtn">Clear logs</button>
+      </div>
+      <div class="tablewrap"><table id="logTable"><thead></thead><tbody></tbody></table></div>
+      <p class="hint">Logs local hain. "Download diagnostics" (Settings tab) se pura bundle nikal sakte hain — extension ko improve karne ke liye wahi file share karein.</p>
+    </section>
+
+    <!-- ================= HELP ================= -->
+    <section class="tab" id="tab-help">
+      <div class="panel">
+        <h2>Kaise use karein</h2>
+        <ol class="list">
+          <li><b>Install:</b> chrome://extensions → Developer mode ON → "Load unpacked" → is folder ko select karein.</li>
+          <li><b>Scrape:</b> koi bhi website kholein (contact page, team page, directory listing), toolbar par LeadHarvest icon dabayein → "Is page se contact data scrape karein".</li>
+          <li><b>Check:</b> Dashboard → Data tab me sab records dikhte hain. Cell par click karke edit bhi kar sakte hain.</li>
+          <li><b>Export:</b> format chunein (Excel / CSV / PDF / TXT / Notes / JSON) → Export. File Downloads folder me chali jaati hai — wahan se phone/Drive par bhej dein.</li>
+          <li><b>Structure badlein:</b> Data structure tab me fields on/off, rename, custom selector/regex, custom field add karein.</li>
+        </ol>
+        <h3 style="margin-top:16px">Data kaise nikalta hai (order)</h3>
+        <ol class="list">
+          <li><b>Table rows</b> — agar page par header wali table hai (Name / Phone / Email columns), har row ek record.</li>
+          <li><b>Repeated cards</b> — team/listing pages par har card ek record.</li>
+          <li><b>Single page</b> — contact page ya business site par pura page ek record.</li>
+          <li>Har field ke andar priority: JSON-LD → microdata → tel:/mailto: links → CSS selectors → regex → heuristics.</li>
+        </ol>
+        <h3 style="margin-top:16px">Privacy</h3>
+        <p class="small muted">Sab kuch aapke browser me chalta hai. Page content kisi server par nahi jata. Cloud AI mode sirf tab data bhejta hai jab aap khud API key daal kar use on karein — aur tab bhi sirf page ka chhota summary, pura HTML nahi. Logs me email/phone default me redact hote hain.</p>
+        <h3 style="margin-top:16px">Kya scrape kiya ja sakta hai</h3>
+        <div class="kv" id="whatTable"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="lib/schema.js"></script>
+  <script src="lib/xlsx.js"></script>
+  <script src="lib/pdf.js"></script>
+  <script src="lib/exporter.js"></script>
+  <script src="lib/download.js"></script>
+  <script src="lib/advisor.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

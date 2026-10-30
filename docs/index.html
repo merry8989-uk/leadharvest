@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeadHarvest — Website Data Collector for Chrome &amp; Firefox</title>
+<meta name="description" content="LeadHarvest is a browser extension that extracts contact details (name, phone, email, designation, company, address) from any web page, stores them locally on your device, and exports them to Excel, CSV, PDF, TXT, JSON or Notes.">
+<meta name="theme-color" content="#4f46e5">
+<meta property="og:title" content="LeadHarvest — Website Data Collector">
+<meta property="og:description" content="Scrape contact details from any page, structure them your way, export to Excel / PDF / CSV / Notes. Local-first, no account, no telemetry.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%234f46e5'/%3E%3Cpath d='M14 17h36L37 34v13l-10 6V34z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="mark">LH</span> LeadHarvest</a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#fields">Fields</a>
+      <a href="#schema">Data structure</a>
+      <a href="#ai">AI advisor</a>
+      <a href="#export">Export</a>
+      <a href="#install">Install</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============================ HERO ============================ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Turn any web page into a clean contact list — on your own device.</h1>
+      <p class="lead">LeadHarvest pulls names, phone numbers, emails, designations, companies and addresses out of the page you are on, keeps them in local storage, and exports them as Excel, CSV, PDF, TXT or Notes. No account, no server, no telemetry.</p>
+      <div class="actions">
+        <a class="btn primary" href="#install">Add to Chrome</a>
+        <a class="btn primary" href="#install">Add to Firefox</a>
+        <a class="btn ghost" href="privacy.html">Privacy policy</a>
+      </div>
+      <div class="meta">
+        <span class="pill">v1.1.0</span>
+        <span class="pill">Manifest V3</span>
+        <span class="pill ok">Local-first</span>
+        <span class="pill ok">Zero telemetry</span>
+        <span class="pill">Chrome 121+ · Firefox 140+</span>
+      </div>
+    </div>
+
+    <div class="demo" aria-hidden="true">
+      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="row"><b>Rajesh Sharma</b><span class="tag">PHONE ✓</span></div>
+      <div class="row"><span>+91 98765 43210 · info@sharmaca.in</span></div>
+      <div class="row"><span>Managing Partner · Sharma &amp; Associates</span></div>
+      <div class="row"><span>204, MG Road, Pune 411001</span></div>
+      <div class="row" style="background:#0f2033"><b>Priya Nair</b><span class="tag">EMAIL ✓</span></div>
+      <div class="row"><span>Head of Engineering · Nimbus Tech</span></div>
+      <div class="foot"><span class="on">XLSX</span><span>CSV</span><span>PDF</span><span>Notes</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ HOW IT WORKS ============================ -->
+<section class="block" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>One click reads the page the way a person would</h2>
+      <p>Most scrapers depend on one CSS selector, so they break the moment a site changes. LeadHarvest looks at four independent sources and keeps whichever one actually has data.</p>
+    </div>
+    <div class="grid c4">
+      <div class="card">
+        <span class="num">1</span>
+        <h3>Tables</h3>
+        <p>A page with a real table (Name / Phone / Email columns) becomes one record per row. Column headers are matched against a synonym list, so “Contact Person”, “Mobile No.” and “E-mail” all map correctly.</p>
+      </div>
+      <div class="card">
+        <span class="num">2</span>
+        <h3>Repeated cards</h3>
+        <p>Team pages, listings and directories are built from repeated blocks. The engine finds the smallest block that holds a contact signal, then reads each block as one person or business.</p>
+      </div>
+      <div class="card">
+        <span class="num">3</span>
+        <h3>Single page</h3>
+        <p>A contact page, profile or small business site becomes one record: the whole page is read together, and the address is split into city, state and pincode afterwards.</p>
+      </div>
+      <div class="card">
+        <span class="num">4</span>
+        <h3>Structured data</h3>
+        <p>If the site publishes JSON-LD or microdata (schema.org), every Person, Organization or LocalBusiness entity is read as its own record — the cleanest data a page can offer.</p>
+      </div>
+    </div>
+
+    <div class="note blue" style="margin-top:22px">
+      <b>Inside every field, four fallbacks run in order:</b>
+      JSON-LD → microdata → <code>tel:</code>/<code>mailto:</code> links → your CSS selectors → regex → heuristics.
+      Each value carries a confidence score, so a phone pulled from a structured <code>telephone</code> property outranks one guessed from raw text.
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FEATURES ============================ -->
+<section class="block" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Features</span>
+      <h2>Everything in the box</h2>
+      <p>Built for people who collect business contacts by hand today and would rather not paste rows into a spreadsheet one at a time.</p>
+    </div>
+    <div class="grid c3">
+
+      <div class="card">
+        <span class="ico">🧩</span>
+        <h3>15 fields + your own</h3>
+        <p>Name, designation, company, phone, email, address, city, state, pincode, country, website, social profiles, category, rating and notes — plus any custom field you define with a selector or a regex.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🎯</span>
+        <h3>Confidence scoring</h3>
+        <p>Every record gets a score based on which fields were found and how reliable the source was. You can see at a glance which records are solid and which need a manual look.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🧮</span>
+        <h3>Schema builder</h3>
+        <p>Decide what “data” means for you: rename columns, change types, mark fields required, set weights, reorder priorities. Export the schema as JSON and reuse it on another machine.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🖱️</span>
+        <h3>Element picker</h3>
+        <p>When automatic detection misses something, click “Pick element from a page”, then click the element on the site. The CSS selector is captured and saved to that field.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🤖</span>
+        <h3>AI advisor</h3>
+        <p>A local rule engine reads the page signals and recommends which fields matter here — with a reason for each. An optional cloud mode is available if you want a second opinion.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">📤</span>
+        <h3>Seven export formats</h3>
+        <p>Excel with frozen headers and autofilter, CSV with a UTF-8 BOM so Hindi survives, a paginated PDF, plain TXT, Markdown notes, JSON, and a print-ready HTML view.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🗂️</span>
+        <h3>History</h3>
+        <p>Every scrape is logged with time, page, page type, extraction method, record count and duration. Re-export the records from any past scrape in one click.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">✏️</span>
+        <h3>Inline editing</h3>
+        <p>Click any cell in the dashboard to fix a name, add a note or paste a WhatsApp number. Edits save automatically and are included in the next export.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🧾</span>
+        <h3>Logs &amp; diagnostics</h3>
+        <p>Structured logs for scraping, exporting, settings and errors. Emails and phone numbers are redacted by default, and a one-click diagnostics bundle helps debug a site that misbehaves.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">♻️</span>
+        <h3>Duplicate control</h3>
+        <p>Records are de-duplicated on phone, email, name and company, both within a single scrape and across your whole library, so re-scraping a site does not double your list.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🔍</span>
+        <h3>Search &amp; sort</h3>
+        <p>Filter thousands of records by any value, sort by column, and export only the selection or the filtered view.</p>
+      </div>
+
+      <div class="card">
+        <span class="ico">🔒</span>
+        <h3>Nothing leaves the device</h3>
+        <p>No analytics, no accounts, no sync. Records live in the browser's local extension storage and disappear when you clear them or uninstall.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FIELDS ============================ -->
+<section class="block" id="fields">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What can be scraped</span>
+      <h2>Every field, and where it comes from</h2>
+      <p>These are the built-in fields. Each one lists the sources the engine tries, in order, before falling back to heuristics.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:170px">Field</th><th style="width:38%">What it captures</th><th>Sources</th></tr></thead>
+        <tbody>
+          <tr><td><b>Full Name</b></td><td>The person: owner, contact, employee.</td><td><code>Person.name</code> in JSON-LD, <code>[itemprop=name]</code>, <code>[class*=person-name]</code>, headings, card titles</td></tr>
+          <tr><td><b>Designation</b></td><td>Job title or role.</td><td><code>jobTitle</code>, <code>[class*=designation|role|position]</code>, a keyword list of 97 roles (founder, manager, CA, advocate…)</td></tr>
+          <tr><td><b>Company / Business</b></td><td>Firm or business name.</td><td><code>Organization.name</code>, <code>legalName</code>, <code>[class*=company]</code>, <code>og:site_name</code>, page title suffix</td></tr>
+          <tr><td><b>Phone</b></td><td>Mobile, landline or WhatsApp number.</td><td><code>tel:</code> / <code>wa.me</code> links, <code>telephone</code>, six regex families (+91, 10-digit, STD landline, international), normalised to E.164</td></tr>
+          <tr><td><b>Email</b></td><td>Email address.</td><td><code>mailto:</code> links, <code>email</code>, regex with junk filtering (image names, placeholder domains, sentry noise)</td></tr>
+          <tr><td><b>Address</b></td><td>Full postal address.</td><td><code>PostalAddress</code> joined into one line, <code>[itemprop=address]</code>, <code>[class*=address|location|office]</code>, pincode-based detection</td></tr>
+          <tr><td><b>City</b></td><td>City or locality.</td><td><code>addressLocality</code>, parsed out of the address using comma structure and pincode position</td></tr>
+          <tr><td><b>State</b></td><td>State or region.</td><td><code>addressRegion</code>, matched against a list of 39 Indian states and union territories</td></tr>
+          <tr><td><b>Pincode / ZIP</b></td><td>6-digit PIN or 5-digit ZIP.</td><td><code>postalCode</code>, regex over the address</td></tr>
+          <tr><td><b>Country</b></td><td>Country.</td><td><code>addressCountry</code>, “India” detection in the address text</td></tr>
+          <tr><td><b>Website</b></td><td>Business site or profile URL.</td><td><code>url</code> in JSON-LD, <code>link[rel=canonical]</code>, page origin</td></tr>
+          <tr><td><b>Social / LinkedIn</b></td><td>LinkedIn, Instagram, Facebook, X, YouTube, Telegram.</td><td><code>sameAs</code>, outbound links filtered by domain</td></tr>
+          <tr><td><b>Category / Industry</b></td><td>Business type.</td><td>schema.org <code>@type</code>, <code>[class*=category|industry]</code>, meta section</td></tr>
+          <tr><td><b>Rating / Reviews</b></td><td>Star rating and review count.</td><td><code>ratingValue</code>, <code>reviewCount</code>, <code>[class*=rating]</code></td></tr>
+          <tr><td><b>Notes</b></td><td>Your own remarks.</td><td>You — type into the dashboard cell</td></tr>
+          <tr><td><b>Custom field</b></td><td>Anything else: GST number, WhatsApp, employee count…</td><td>Your CSS selector, your regex, or a JSON-LD key</td></tr>
+          <tr><td class="muted">Source URL</td><td class="muted">Which page the record came from.</td><td class="muted">Automatic</td></tr>
+          <tr><td class="muted">Page title</td><td class="muted">Title of that page.</td><td class="muted">Automatic</td></tr>
+          <tr><td class="muted">Scraped at</td><td class="muted">Timestamp.</td><td class="muted">Automatic</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:12px">Phone numbers are normalised: <code>98765 43210</code>, <code>098765 43210</code>, <code>+91-98765-43210</code> and <code>(+91) 98765 43210</code> all become <code>+919876543210</code>. Landlines keep their STD code.</p>
+  </div>
+</section>
+
+<!-- ============================ SCHEMA ============================ -->
+<section class="block" id="schema">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Data structure</span>
+      <h2>You decide what a record looks like</h2>
+      <p>The schema tab is where the extension stops being generic. Turn fields off that you never use, rename the ones you do, and teach it the ones it does not know.</p>
+    </div>
+    <div class="grid c2">
+      <div class="card">
+        <h3>Per field you can set</h3>
+        <ul class="ticks">
+          <li><b>On / off</b> — only enabled fields are scraped and exported</li>
+          <li><b>Label</b> — the column header in Excel, PDF and CSV</li>
+          <li><b>Type</b> — text, phone, email, URL, multiline or number</li>
+          <li><b>Required</b> — flags records that are missing a must-have</li>
+          <li><b>Weight</b> — how much the field counts towards confidence</li>
+          <li><b>Selectors</b> — one CSS selector per line, tried in order</li>
+          <li><b>Regex</b> — one pattern per line, capture group 1 is used</li>
+          <li><b>JSON-LD keys</b> — comma separated property names</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Presets, import and export</h3>
+        <p>Four ready-made structures, one click each:</p>
+        <ul class="ticks">
+          <li><b>Phone book</b> — name, phone, address, city, state, pincode</li>
+          <li><b>B2B leads</b> — name, designation, company, email, phone, website, city</li>
+          <li><b>Directory / listing</b> — company, phone, email, address, city, category, rating</li>
+          <li><b>Everything</b> — all fifteen fields on</li>
+        </ul>
+        <p style="margin-top:12px">Export the whole schema as <code>leadharvest-schema.json</code> and import it on another machine, or keep it in version control next to your team's conventions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ AI ============================ -->
+<section class="block" id="ai">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">AI advisor</span>
+      <h2>“Which data is actually worth scraping here?”</h2>
+      <p>The advisor looks at what the page offers — structured data, <code>tel:</code> links, tables, forms, address text, page type — and tells you which fields to enable, with a reason for each suggestion.</p>
+    </div>
+    <div class="grid c2">
+      <div class="card">
+        <h3>Local rules <span class="pill" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0">default</span></h3>
+        <ul class="ticks">
+          <li>Runs entirely inside your browser</li>
+          <li>No API key, no account, no cost</li>
+          <li>Deterministic: same page, same advice</li>
+          <li>Explains itself in plain language</li>
+          <li>Works offline</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cloud AI <span class="pill" style="background:#fffbeb;color:#b45309;border-color:#fde68a">optional</span></h3>
+        <ul class="ticks">
+          <li>Bring your own key: Sarvam AI, OpenAI, Groq or any OpenAI-compatible endpoint</li>
+          <li>Only a short page summary is sent — never the full HTML</li>
+          <li>Off by default; nothing is sent until you enable it</li>
+          <li>Your key is stored locally and sent only to the provider you chose</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note" style="margin-top:20px">
+      If you leave cloud mode off, the extension never makes a single network request. That is the intended way to use it.
+    </div>
+  </div>
+</section>
+
+<!-- ============================ EXPORT ============================ -->
+<section class="block" id="export">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Export</span>
+      <h2>Get the data where you actually need it</h2>
+      <p>Files are written by the extension itself — no external library, no upload, no conversion service. They land in your Downloads folder.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:120px">Format</th><th style="width:110px">File</th><th>Best for</th></tr></thead>
+        <tbody>
+          <tr><td><b>Excel</b></td><td><code>.xlsx</code></td><td>Sorting and filtering. Frozen header row, autofilter, wrapped cells, sensible column widths. Imports cleanly into most CRMs.</td></tr>
+          <tr><td><b>CSV</b></td><td><code>.csv</code></td><td>Google Sheets, Zoho, HubSpot, any importer. UTF-8 BOM so Hindi and accented names are not mangled. Comma, semicolon or tab.</td></tr>
+          <tr><td><b>PDF</b></td><td><code>.pdf</code></td><td>Sending a list to a client or printing it. A4 or Letter, paginated, with a header and page numbers.</td></tr>
+          <tr><td><b>TXT</b></td><td><code>.txt</code></td><td>Reading on a phone, pasting into WhatsApp or a chat.</td></tr>
+          <tr><td><b>Notes</b></td><td><code>.md</code></td><td>Notion, Obsidian, Google Keep, Apple Notes — one heading per record, bold labels.</td></tr>
+          <tr><td><b>JSON</b></td><td><code>.json</code></td><td>Feeding your own scripts or a database.</td></tr>
+          <tr><td><b>HTML</b></td><td><code>.html</code></td><td>Open in a browser and print to PDF — the reliable route for Devanagari and other non-Latin scripts.</td></tr>
+          <tr><td><b>Clipboard</b></td><td>—</td><td>Tab-separated, pastes straight into a spreadsheet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:12px">File names come from a template you control: <code>{domain}</code>, <code>{date}</code>, <code>{time}</code>, <code>{count}</code>. The default produces something like <code>leadharvest-sharmaca.in-2026-10-30.xlsx</code>.</p>
+  </div>
+</section>
+
+<!-- ============================ DATA ============================ -->
+<section class="block" id="data">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Local data</span>
+      <h2>Your list lives on your machine</h2>
+      <p>Records, history and logs are kept in the browser's extension storage. Nothing is uploaded, and there is no account to log into.</p>
+    </div>
+    <div class="grid c3">
+      <div class="card">
+        <h3>Records</h3>
+        <p>Up to 5,000 records with all their fields, confidence scores and source URLs. Search, sort, edit, delete, export — all local.</p>
+      </div>
+      <div class="card">
+        <h3>History</h3>
+        <p>The last 500 scrapes: when, from which page, which method was used, how many records, how long it took, which format you exported.</p>
+      </div>
+      <div class="card">
+        <h3>Logs</h3>
+        <p>Scrape, export, settings and error events with levels and scopes. Emails and phone numbers are redacted before they are written.</p>
+      </div>
+    </div>
+    <div class="note green" style="margin-top:20px">
+      <b>Deleting is real.</b> “Clear records”, “Clear history” and “Clear logs” wipe the data immediately, and uninstalling the extension removes everything with it. There is no copy anywhere else.
+    </div>
+  </div>
+</section>
+
+<!-- ============================ INSTALL ============================ -->
+<section class="block" id="install">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Install</span>
+      <h2>Two minutes, either browser</h2>
+    </div>
+    <div class="grid c2">
+      <div class="card">
+        <h3>Chrome, Edge, Brave, Opera</h3>
+        <ol class="steps" style="margin-top:12px">
+          <li>Download and unzip the extension folder.</li>
+          <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code>).</li>
+          <li>Turn on <b>Developer mode</b>.</li>
+          <li>Click <b>Load unpacked</b> and pick the unzipped folder — the one containing <code>manifest.json</code>.</li>
+          <li>Pin the LeadHarvest icon to the toolbar.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Firefox 140+</h3>
+        <ol class="steps" style="margin-top:12px">
+          <li>Open <code>about:debugging#/runtime/this-firefox</code>.</li>
+          <li>Click <b>Load Temporary Add-on</b>.</li>
+          <li>Select <code>manifest.json</code> inside the unzipped folder.</li>
+          <li>The add-on is active until you restart Firefox — permanent installs come from a signed build on addons.mozilla.org.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="note blue" style="margin-top:20px">
+      <b>On a phone:</b> Chrome for Android does not support extensions. Use a Chromium-based mobile browser that does (for example Kiwi Browser) with the Firefox build, or scrape on a desktop and send yourself the exported file — it is a few kilobytes and opens anywhere.
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="block" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">FAQ</span>
+      <h2>Straight answers</h2>
+    </div>
+
+    <details>
+      <summary>Does it send my data anywhere?</summary>
+      <div class="inner"><p>No. Scraping, parsing, storage and file generation all happen inside your browser. The only network request the code can make is the optional cloud-AI advisor, which stays disabled unless you add your own API key and switch it on.</p></div>
+    </details>
+
+    <details>
+      <summary>Why does it need access to all websites?</summary>
+      <div class="inner"><p>Because you point it at whatever page you are reading, and that could be any site. The extractor is not injected into pages automatically — the manifest declares no content scripts, and the code is injected only at the moment you click scrape. If you prefer, you can restrict the extension's site access in your browser's extension settings.</p></div>
+    </details>
+
+    <details>
+      <summary>Is this legal to use?</summary>
+      <div class="inner"><p>Scraping publicly visible pages is widely done, but the rules depend on the site and the jurisdiction. Check the site's terms of service and <code>robots.txt</code>, collect only what you actually need, and remember that contact details are personal data — in India the DPDP Act 2023 gives people rights over it, including deletion. The extension is a tool; how you use it is your call.</p></div>
+    </details>
+
+    <details>
+      <summary>What does it deliberately not do?</summary>
+      <div class="inner"><p>No crawling across many pages on its own, no logging into sites, no bypassing paywalls or captchas, no bulk email or WhatsApp sending, and no uploading to a cloud of ours. It reads one page you are looking at, when you ask it to.</p></div>
+    </details>
+
+    <details>
+      <summary>Why did a page return zero records?</summary>
+      <div class="inner"><p>Usually one of three things: the page loads its content on scroll (turn on “auto-scroll before scraping”, or scroll manually first), the contact details are inside an image, or the site hides them behind a form. Opening the individual detail or contact page and scraping that usually works.</p></div>
+    </details>
+
+    <details>
+      <summary>Excel shows the phone number as a number and drops the plus sign.</summary>
+      <div class="inner"><p>Phone numbers and pincodes are exported as text on purpose, so leading zeros survive. If your spreadsheet app still reformats them, set that column to “Text” before importing.</p></div>
+    </details>
+
+    <details>
+      <summary>Hindi or Tamil text turns into question marks in the PDF.</summary>
+      <div class="inner"><p>The built-in PDF writer uses the standard PDF fonts, which only cover Latin script. For Indic scripts, export as HTML and print to PDF from the browser, or use the “Print / PDF” button — the browser has the right fonts.</p></div>
+    </details>
+
+    <details>
+      <summary>Can I use it for my team?</summary>
+      <div class="inner"><p>Yes, but there is no sync: each browser keeps its own local list. Share the exported Excel file, or share a schema JSON so everyone collects the same fields.</p></div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================ ABOUT ============================ -->
+<section class="block" id="about">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">About</span>
+      <h2>Who builds this</h2>
+      <p>LeadHarvest is an independent project — a small, dependency-free extension written to solve one problem well: getting contact details off a web page without handing them to a third party.</p>
+    </div>
+
+    <div class="about">
+      <div>
+        <div class="creator">
+          <div class="avatar">A</div>
+          <h3 style="margin-bottom:2px">Amit</h3>
+          <p class="small muted" style="margin-bottom:12px">Developer &amp; maintainer</p>
+          <p style="font-size:.94rem">I build small tools that keep data on the device it came from. If you find a site where LeadHarvest misses a field, send me the URL and I will add a selector preset for it.</p>
+          <ul class="linklist">
+            <li>
+              <span class="lbl">Instagram</span>
+              <a href="https://www.instagram.com/osintgram_io/" target="_blank" rel="noopener me">@osintgram_io</a>
+            </li>
+            <li>
+              <span class="lbl">Email</span>
+              <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a>
+            </li>
+            <li>
+              <span class="lbl">Privacy</span>
+              <a href="privacy.html">Privacy policy</a>
+            </li>
+            <li>
+              <span class="lbl">Source</span>
+              <a href="https://github.com/merry8989-uk/leadharvest" target="_blank" rel="noopener">GitHub repository</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="note">
+          <b>Contact for bugs and requests</b><br>
+          Mail <a href="mailto:br19shc39@gmail.com">br19shc39@gmail.com</a> with the page URL, your browser version and — if you can — the diagnostics file from Settings. That bundle usually explains the failure in one look.
+        </div>
+        <div class="note blue" style="margin-top:14px">
+          <b>Privacy at a glance</b><br>
+          No account, no analytics, no server. Records stay in your browser. The only optional network call is the cloud AI advisor, which you enable yourself.
+          <br><a href="privacy.html">Read the full privacy policy →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap frow">
+    <div>
+      <a class="brand" href="#top" style="color:#fff"><span class="mark">LH</span> LeadHarvest</a>
+      <div class="small" style="margin-top:8px">v1.1.0 · Manifest V3 · Chrome 121+ and Firefox 140+</div>
+    </div>
+    <div class="small" style="display:flex;gap:18px;flex-wrap:wrap">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="privacy.html">Privacy policy</a>
+      <a href="mailto:br19shc39@gmail.com">Contact</a>
+    </div>
+  </div>
+  <div class="wrap small" style="margin-top:18px;color:#64748b">Built for people who would rather keep their own data. Use it responsibly — respect site terms and applicable privacy law.</div>
+</footer>
+
+</body>
+</html>

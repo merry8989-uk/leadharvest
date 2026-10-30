@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LeadHarvest</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="popup">
+  <header class="lh-head">
+    <div class="lh-logo">LH</div>
+    <div>
+      <div class="lh-title">LeadHarvest</div>
+      <div class="lh-sub" id="ver">v1.1.0</div>
+    </div>
+    <div class="lh-count" id="storedCount" title="Aapke device par saved records">0</div>
+  </header>
+
+  <div class="page-card">
+    <div class="page-domain" id="pageDomain">Loading…</div>
+    <div class="page-title" id="pageTitle"></div>
+  </div>
+
+  <button id="scrapeBtn" class="btn btn-primary btn-lg">Is page se contact data scrape karein</button>
+
+  <div id="result" class="result hidden"></div>
+
+  <div class="quick-export">
+    <select id="format" title="Export format">
+      <option value="xlsx">Excel (.xlsx)</option>
+      <option value="csv">CSV</option>
+      <option value="pdf">PDF</option>
+      <option value="txt">TXT</option>
+      <option value="md">Notes (.md)</option>
+      <option value="json">JSON</option>
+      <option value="html">HTML (print)</option>
+    </select>
+    <button id="exportBtn" class="btn">Export all</button>
+  </div>
+
+  <div class="ai-hint" id="aiHint">Tip: pehle page ko scroll kar lein, phir scrape karein.</div>
+
+  <footer class="lh-foot">
+    <a href="#" id="dashLink">Dashboard</a>
+    <a href="#" id="histLink">History</a>
+    <a href="#" id="logLink">Logs</a>
+    <a href="#" id="helpLink">Help</a>
+  </footer>
+
+  <script src="lib/schema.js"></script>
+  <script src="lib/xlsx.js"></script>
+  <script src="lib/pdf.js"></script>
+  <script src="lib/exporter.js"></script>
+  <script src="lib/download.js"></script>
+  <script src="lib/advisor.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
