@@ -46,7 +46,7 @@ node tools/make-updates.js --file "dist/leadharvest-extension-v$VER.zip" --out d
 
 # 2. source package: everything, for AMO reviewers and for the GitHub repository
 zip -rq "dist/leadharvest-source-v$VER.zip" . \
-  -x "dist/*" "*.DS_Store" ".git/*" "*/.git/*" "node_modules/*" "*/node_modules/*" "*.zip"
+  -x "dist/*" "store/raw/*" "*.DS_Store" ".git/*" "*/.git/*" "node_modules/*" "*/node_modules/*" "*.zip"
 
 echo
 echo "Built:"

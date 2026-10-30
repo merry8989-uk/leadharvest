@@ -108,14 +108,15 @@ data — in India the DPDP Act 2023 gives people rights over theirs.
 
 | # | File | Caption |
 |---|---|---|
-| 1 | `docs/assets/shot-dashboard-data.png` | Every record, with its fields and source, editable in place |
-| 2 | `docs/assets/shot-dashboard-schema.png` | Choose your own fields, selectors and regex |
-| 3 | `docs/assets/shot-dashboard-diagnostics.png` | Diagnostics and “Share logs with developer” |
-| 4 | `docs/assets/shot-popup.png` | One tap to read the page you are on |
-| 5 | `docs/assets/shot-dashboard-history.png` | What was scraped, when, and how long it took |
+| 1 | `store/shot-1-data.png` | Every record, with its fields and source, editable in place |
+| 2 | `store/shot-2-structure.png` | Choose your own fields, selectors and regex |
+| 3 | `store/shot-3-diagnostics.png` | Diagnostics and “Share logs with developer” |
+| 4 | `store/shot-4-history.png` | What was scraped, when, and how long it took |
+| 5 | `store/shot-5-popup.png` | One tap to read the page you are on |
 
-AMO wants 1–6 images, 1280×800 or larger; the dashboard shots are 2720×1760. The popup shot is
-1116×900 — crop or use it last.
+All five are exactly **1280×800** (16:10), which is what AMO and the Chrome Web Store expect, and
+they are real renders of the extension with demo data. Icon: `store/icon-128.png` (128×128) for the
+listing, `store/icon-512.png` for anything larger. `store/README.txt` lists every file.
 
 ---
 
