@@ -333,7 +333,9 @@
     return m;
   }
 
-  const pct = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : 0);
+  /* A rate can never exceed 100: the denominator is the larger of "attempts recorded"
+     and "outcomes recorded", so a partial event stream cannot produce 150%. */
+  const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 1000) / 10) : 0);
 
   /* The rates from §15 of the checklist, computed from what was actually recorded. */
   function rates(metrics) {
@@ -342,12 +344,12 @@
     for (const k of Object.keys(m.fields)) { found += m.fields[k].found; missing += m.fields[k].missing; }
     const attempts = m.records.extracted + m.records.failed;
     return {
-      extraction_success_rate: pct(m.sessions.completed, m.sessions.started),
+      extraction_success_rate: pct(m.sessions.completed, Math.max(m.sessions.started, m.sessions.completed + m.sessions.failed)),
       field_completeness: pct(found, found + missing),
       valid_record_rate: null,
       duplicate_rate: pct(m.duplicates.exact + m.duplicates.potential, m.records.extracted),
       export_success_rate: pct(m.exports.ok, m.exports.total),
-      failure_rate: pct(m.sessions.failed + m.records.failed, m.sessions.started + attempts),
+      failure_rate: pct(m.sessions.failed + m.records.failed, Math.max(m.sessions.started + attempts, m.sessions.completed + m.sessions.failed + attempts)),
       avg_processing_ms: m.perf.extraction_ms_count ? Math.round(m.perf.extraction_ms_sum / m.perf.extraction_ms_count) : 0,
       avg_record_ms: m.perf.record_ms_count ? Math.round((m.perf.record_ms_sum / m.perf.record_ms_count) * 10) / 10 : 0,
       data_freshness: m.last_seen || null,

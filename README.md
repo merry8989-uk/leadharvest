@@ -8,6 +8,7 @@ hai: koi server nahi, koi account nahi, koi telemetry nahi.
 **Version 1.2.0** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
 (Excel aur PDF writer isi project me likhe hain)
 
+- **Download:** https://github.com/merry8989-uk/leadharvest/releases/latest
 - **Landing page / feature docs:** https://merry8989-uk.github.io/leadharvest/ (`docs/index.html`)
 - **Privacy policy:** https://merry8989-uk.github.io/leadharvest/privacy.html (`docs/privacy.html`)
 - Source repository: https://github.com/merry8989-uk/leadharvest
@@ -178,9 +179,11 @@ leadharvest/
 ├── manifest.json          # cross-browser MV3 (Chrome service worker + Firefox event page)
 ├── README.md
 ├── AUDIT.md               # security audit + AMO submission checklist
+├── STORE.md               # AMO + Chrome Web Store listing copy (paste-ready)
+├── LICENSE                # All rights reserved (MIT me badalna ho to bata dein)
 ├── build.sh               # dist/ zips banata hai
 ├── icons/                 # 16/32/48/128 PNG
-├── docs/                  # GitHub Pages site: index.html, privacy.html, assets/
+├── docs/                  # GitHub Pages site: index.html, privacy.html, assets/ (+ screenshots)
 ├── tools/audit.js         # static audit (permissions, remote code, XSS sinks, packaging)
 └── src/
     ├── background.js      # storage, scrape orchestration, history, logs
@@ -207,7 +210,14 @@ client se jata hai, extension khud kuch upload nahi karta.
 
 ---
 
-## 12. Build & verify
+## 12. Screenshots
+
+`docs/assets/shot-*.png` — ye asli UI ke renders hain (headless Chromium me extension ke apne HTML se,
+demo data ke saath), mockups nahi. Dobara banane ke liye: `node shots.js` (source zip me shaamil hai).
+
+---
+
+## 13. Build & verify
 
 ```bash
 bash build.sh                      # dist/ me extension + source zip
@@ -217,7 +227,7 @@ npx web-ext@latest lint --source-dir .   # Mozilla ka addons-linter (AMO wahi ch
 
 ---
 
-## 13. Aage kya add ho sakta hai
+## 14. Aage kya add ho sakta hai
 
 Multi-page crawl (list → detail), CRM push (HubSpot/Zoho/Sheets), email/phone validation, duplicate
 merge UI, scheduled re-scrape, CSV column mapping, cloud sync.
