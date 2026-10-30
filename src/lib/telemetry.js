@@ -4,7 +4,9 @@
 (function (root) {
   'use strict';
 
-  const EXT_VERSION = '1.2.0';
+  /* Fallback only. The background passes the real manifest version into env() so this
+     constant can never drift out of date again. */
+  const EXT_VERSION = '1.3.2';
   const ALGO = { dedupe: 'v1', parser: 'v1.2', schema: '1' };
 
   /* Every event the extension can emit, grouped the way the logging checklist groups them. */
@@ -179,7 +181,7 @@
   }
 
   /* ------------------------------------------------------------------- env */
-  function env() {
+  function env(versionOverride) {
     const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
     let browser = 'unknown', ver = '';
     if (/Edg\/([\d.]+)/.test(ua)) { browser = 'Edge'; ver = RegExp.$1; }
@@ -203,7 +205,7 @@
       browser_version: ver,
       platform,
       ui_language: lang.split('-')[0] || '',
-      extension_version: EXT_VERSION
+      extension_version: versionOverride || EXT_VERSION
     };
   }
 

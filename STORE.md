@@ -10,7 +10,7 @@ the shipped build; nothing here promises a feature the code does not have.
 | Field | Value |
 |---|---|
 | Name | `LeadHarvest — Website Data Collector` |
-| Version | `1.3.1` |
+| Version | `1.3.2` |
 | Add-on ID (AMO, permanent) | `leadharvest@br19shc39@gmail.com` |
 | Homepage | https://merry8989-uk.github.io/leadharvest/ |
 | Privacy policy URL | https://merry8989-uk.github.io/leadharvest/privacy.html |
@@ -165,6 +165,11 @@ A static audit script is included: node tools/audit.js .   (result: 28 pass, 2 w
 ## 6. “What’s new” for this version
 
 ```
+v1.3.2
+• Version bump for a fresh submission; no behaviour change. Upload either
+  leadharvest-extension-v1.3.2.zip (Chrome + Firefox, one manifest) or
+  leadharvest-firefox-v1.3.2.zip (Firefox-only manifest, zero validation warnings).
+
 v1.3.1
 • No innerHTML sinks left: every view is mounted from a parsed fragment, which clears the
   addons-linter "unsafe assignment to innerHTML" warnings (14 of them in v1.3.0)
@@ -189,9 +194,9 @@ eight export formats, local history, diagnostic telemetry with a share-to-develo
 
 - [ ] `npx web-ext@latest lint --source-dir .` → 0 errors
 - [ ] `node tools/audit.js .` → 0 failures
-- [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.1.zip` (manifest at the zip root)
-- [ ] Upload **`leadharvest-extension-v1.3.1.zip`** to AMO → *On this site* (listed). Never upload `leadharvest-SELFHOST-ONLY-*.zip`: it carries `gecko.update_url`, which AMO rejects for listed add-ons.
-- [ ] Optional: upload **`leadharvest-firefox-v1.3.1.zip`** instead if you want a validation with **zero** warnings — it is the same code with `background.service_worker` removed (Firefox does not need it; Chrome does). Keep the normal zip for Chrome/Edge users.
+- [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.2.zip` (manifest at the zip root)
+- [ ] Upload **`leadharvest-extension-v1.3.2.zip`** to AMO → *On this site* (listed). Never upload `leadharvest-SELFHOST-ONLY-*.zip`: it carries `gecko.update_url`, which AMO rejects for listed add-ons.
+- [ ] Optional: upload **`leadharvest-firefox-v1.3.2.zip`** instead if you want a validation with **zero** warnings — it is the same code with `background.service_worker` removed (Firefox does not need it; Chrome does). Keep the normal zip for Chrome/Edge users.
 - [ ] Fill the fields above, upload the five screenshots, set the licence
 - [ ] Paste §5 into the reviewer notes
 - [ ] After signing, replace the “Download” button on the site with the AMO install link

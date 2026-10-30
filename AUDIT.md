@@ -1,4 +1,4 @@
-# Audit & Firefox (AMO) readiness — LeadHarvest v1.3.1
+# Audit & Firefox (AMO) readiness — LeadHarvest v1.3.2
 
 Date: 30 October 2026 · Auditor: automated static audit + manual code review
 Scope: full source tree (`manifest.json`, `src/**`, `icons/**`) — 24 files, ~230 KB
@@ -180,6 +180,7 @@ faked.
 
 | Version | Notes |
 |---|---|
+| 1.3.2 | Version bump for a fresh AMO submission. Also fixed a stale `EXT_VERSION` constant in `telemetry.js` that had been reporting 1.2.0 in the diagnostics environment block since v1.3.0 — `env()` now takes the live manifest version, so it cannot drift again. |
 | 1.3.1 | AMO validation response: every `innerHTML` assignment replaced with `LeadDOM.mount()` (parsed fragment, imported nodes) so the linter's 14 "unsafe assignment to innerHTML" warnings disappear; `gecko_android.strict_min_version` raised to 142.0 so `data_collection_permissions` is understood on Android; self-hosted build renamed `SELFHOST-ONLY` after an `update_url` rejection on AMO |
 | 1.3.0 | Deep audit round: CSV formula-injection guard, phone-aware de-duplication, 2-row tables, non-http(s) pages always blocked, dashboard refresh without polling (no more interrupted cell edits), popup loads a summary instead of every record, bounded site metrics, log cap aligned with the UI, field filters, confidence threshold, Alt+Shift+L shortcut |
 | 1.2.0 | Full diagnostic telemetry (57 event types, 15 categories), running metrics with the rates from the logging checklist, capability report, and a "Share logs with developer" flow that composes a pre-filled mail to the maintainer; data-collection declaration extended for the optional share |

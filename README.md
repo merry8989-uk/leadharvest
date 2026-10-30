@@ -5,7 +5,7 @@ phone, email, designation, company, address — nikaal kar aapke device par loca
 unhe **Excel, CSV, PDF, TXT, Notes (.md), JSON** me export karta hai. Sab kuch browser ke andar chalta
 hai: koi server nahi, koi account nahi, koi telemetry nahi.
 
-**Version 1.3.1** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
+**Version 1.3.2** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
 (Excel aur PDF writer isi project me likhe hain)
 
 - **Download:** https://github.com/merry8989-uk/leadharvest/releases/latest

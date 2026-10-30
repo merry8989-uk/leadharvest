@@ -16,7 +16,9 @@ zip -rq "dist/leadharvest-extension-v$VER.zip" manifest.json src icons -x "*.DS_
 
 # 1b. self-hosted package: same code, with gecko.update_url so Firefox can poll our own
 #     update manifest. Only needed when the add-on is distributed outside AMO.
-if [ "${1:-}" = "--self-hosted" ] || [ "${SELF_HOSTED:-0}" = "1" ]; then
+has_flag() { local f="$1"; shift; for a in "$@"; do [ "$a" = "$f" ] && return 0; done; return 1; }
+
+if has_flag --self-hosted "$@" || [ "${SELF_HOSTED:-0}" = "1" ]; then
   rm -rf dist/selfhost
   node tools/inject-update-url.js --url "${UPDATE_URL:-https://merry8989-uk.github.io/leadharvest/updates.json}"
   cp -r src icons dist/selfhost/
@@ -31,7 +33,7 @@ fi
 
 # 1b2. Firefox-only package: same code, manifest without background.service_worker, which
 #      removes the only warning AMO reports on the cross-browser package.
-if [ "${1:-}" = "--firefox" ] || [ "${FIREFOX_ONLY:-0}" = "1" ]; then
+if has_flag --firefox "$@" || [ "${FIREFOX_ONLY:-0}" = "1" ]; then
   rm -rf dist/firefox
   node tools/make-firefox-manifest.js
   cp -r src icons dist/firefox/

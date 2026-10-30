@@ -61,7 +61,7 @@ async function recordEvent(event, opts) {
     if (opts.level === 'debug' && !settings.logging.verbose) return null;
 
     const meta = (T.CATALOG && T.CATALOG[event]) || { cat: opts.category || 'general', p: 'P2' };
-    const env = T.env ? T.env() : {};
+    const env = T.env ? T.env(api.runtime.getManifest().version) : {};
     const data = settings.logging.redactPII !== false && T.redact ? T.redact(opts.data || {}) : (opts.data || {});
 
     const entry = {
@@ -308,7 +308,7 @@ async function buildDiagnostics(note, trigger) {
   const [settings, records, history, logs, metrics] = await Promise.all([
     getSettings(), getRecords(), getHistory(), getLogs(), getMetrics()
   ]);
-  const env = T.env ? T.env() : {};
+  const env = T.env ? T.env(api.runtime.getManifest().version) : {};
   const m = metrics || (T.emptyMetrics ? T.emptyMetrics() : {});
   const bytes = (() => { try { return JSON.stringify({ records, logs, history }).length; } catch (e) { return 0; } })();
 
