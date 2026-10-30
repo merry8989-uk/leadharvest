@@ -127,7 +127,7 @@ locally. It has no backend: the extension never uploads anything.
 
 HOW TO TEST IN A MINUTE
 1. Open any page with contact information (a business "Contact us" page, or a supplier directory table).
-2. Click the toolbar icon → "Is page se contact data scrape karein".
+2. Click the toolbar icon → the main button (labelled "Is page se contact data scrape karein").
 3. The popup reports how many records were found; click "Dashboard" to see them, then pick a format and
    press Export. The file is written to Downloads.
 4. Dashboard → Settings → Diagnostics shows what was recorded and has the "Share logs with developer"
@@ -154,10 +154,18 @@ optional: ["websiteContent", "browsingActivity", "technicalAndInteraction"] — 
 Both are off until the user acts. No email address, phone number, contact name or page text is ever
 logged or transmitted.
 
+MANIFEST NOTE
+The manifest carries both "background.scripts" (used by Firefox, which does not support background
+service workers) and "background.service_worker" (used by Chrome). Each browser ignores the other's
+key, which is why the linter notes the unsupported property. This is the documented cross-browser
+Manifest V3 pattern; removing either key would break one of the two browsers.
+
 CODE
 No eval, no new Function, no remote scripts, no obfuscation, no third-party libraries, no analytics.
-Excel and PDF writers are written in-house. All JS is human-readable, so no source submission is needed.
-A static audit script is included: node tools/audit.js .   (result: 28 pass, 2 warnings, 0 failures)
+Excel and PDF writers are written in-house. Every view is mounted from parsed fragments, so the
+extension contains no innerHTML assignment. All JS is human-readable, so no source submission is
+needed. A static audit script is included: node tools/audit.js .   (result: 29 pass, 3 documented
+warnings, 0 failures). Released under the MIT licence.
 ```
 
 ---
