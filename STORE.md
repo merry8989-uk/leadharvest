@@ -10,7 +10,7 @@ the shipped build; nothing here promises a feature the code does not have.
 | Field | Value |
 |---|---|
 | Name | `LeadHarvest — Website Data Collector` |
-| Version | `1.2.0` |
+| Version | `1.3.0` |
 | Add-on ID (AMO, permanent) | `leadharvest@br19shc39@gmail.com` |
 | Homepage | https://merry8989-uk.github.io/leadharvest/ |
 | Privacy policy URL | https://merry8989-uk.github.io/leadharvest/privacy.html |
@@ -63,6 +63,12 @@ Name, designation, company, phone, email, address, city, state, pincode, country
 profiles, category, rating and notes — plus any custom field you define with a selector or a regex.
 Phone numbers are normalised (+91 98765 43210, 098765 43210 and +91-98765-43210 all become one form)
 and junk emails are filtered out.
+
+SEARCH, FILTER AND SORT
+Free-text search plus field filters — has email, has phone, has address, has company, city contains,
+company contains, or a minimum confidence — then sort any column, select everything that matches, and
+export only that. A confidence threshold in Settings keeps weak records out of the list in the first
+place. Alt+Shift+L scrapes the current page from the keyboard.
 
 YOUR DATA STRUCTURE
 Decide what a record looks like: turn fields on or off, rename the column headers, change the type,
@@ -159,12 +165,15 @@ A static audit script is included: node tools/audit.js .   (result: 28 pass, 2 w
 ## 6. “What’s new” for this version
 
 ```
-First public release.
-• Chrome 121+ and Firefox 140+ from a single Manifest V3 package
-• 15 contact fields plus custom fields, selectable per site
-• Four extraction strategies with confidence scoring
-• Export to Excel, CSV, PDF, TXT, Markdown, JSON, HTML and clipboard
-• Local history, and 15 categories of diagnostic events with a one-click share-to-developer flow
+v1.3.0
+• Field filters (has email / phone / address / company, city, company, minimum confidence)
+• Confidence threshold for what gets saved, and the Alt+Shift+L keyboard shortcut
+• CSV export neutralises spreadsheet formulas so scraped text can never execute in Excel
+• Faster dashboard: refreshes on real changes instead of polling, and never interrupts a cell edit
+• Phone numbers are de-duplicated across country-code formats (+91 98765 43210 = 9876543210)
+
+v1.2.0 — first public release: Chrome 121+ and Firefox 140+, 15 fields, four extraction strategies,
+eight export formats, local history, diagnostic telemetry with a share-to-developer flow.
 ```
 
 ---
@@ -173,7 +182,7 @@ First public release.
 
 - [ ] `npx web-ext@latest lint --source-dir .` → 0 errors
 - [ ] `node tools/audit.js .` → 0 failures
-- [ ] `bash build.sh` → `dist/leadharvest-extension-v1.2.0.zip` (manifest at the zip root)
+- [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.0.zip` (manifest at the zip root)
 - [ ] Upload that zip to AMO → *On this site* (listed)
 - [ ] Fill the fields above, upload the five screenshots, set the licence
 - [ ] Paste §5 into the reviewer notes

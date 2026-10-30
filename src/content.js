@@ -418,7 +418,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     const records = [];
     document.querySelectorAll('table').forEach(table => {
       const rows = [...table.querySelectorAll('tr')];
-      if (rows.length < 3) return;
+      if (rows.length < 2) return;   /* header + at least one data row */
       const headerCells = [...rows[0].querySelectorAll('th,td')];
       if (headerCells.length < 3) return;
       const map = {};

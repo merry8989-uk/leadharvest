@@ -106,7 +106,7 @@
     duplicates: { supported: true, note: 'exact / potential, matched by email, phone, company' },
     compatibility: { supported: true, note: 'hostname, page type, DOM signals, dynamic content, iframes, shadow DOM' },
     pagination: { supported: false, note: 'no automatic pagination crawl in this build; auto-scroll is logged as scroll_collection' },
-    filters: { supported: false, note: 'no field filters in this build; search and selection are logged as filter_used / filter_applied' },
+    filters: { supported: true, note: 'has-email / has-phone / has-address / city / minimum-confidence filters, logged as filter_applied' },
     export: { supported: true, note: 'format, record count, duration, size, failures' },
     storage: { supported: true, note: 'insert / update / delete, quota, retention cleanup, write failures' },
     api: { supported: true, note: 'cloud AI advisor only; no key, token or header is ever logged' },
@@ -271,6 +271,12 @@
         if (host) {
           const s = m.sites[host] || (m.sites[host] = { sessions: 0, records: 0, last: '' });
           s.sessions++; s.records += Number(d.records_extracted) || 0; s.last = ev.ts;
+          /* keep the map bounded: 200 sites, oldest activity dropped first */
+          const hosts = Object.keys(m.sites);
+          if (hosts.length > 200) {
+            hosts.sort((a, b) => String(m.sites[a].last).localeCompare(String(m.sites[b].last)));
+            hosts.slice(0, hosts.length - 200).forEach(h => { delete m.sites[h]; });
+          }
         }
         break;
       case 'session_failed': m.sessions.failed++; break;

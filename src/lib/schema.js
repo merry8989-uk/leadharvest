@@ -88,7 +88,8 @@
       autoScroll: false,
       includeHiddenText: false,
       deepScan: true,          // scan tables, JSON-LD, microdata, meta
-      onlyVisible: true
+      onlyVisible: true,
+      minConfidence: 0         // 0 = keep everything; 0.5 = drop weak records
     },
     output: {
       format: 'xlsx',

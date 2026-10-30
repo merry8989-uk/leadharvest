@@ -7,7 +7,7 @@
 </head>
 <body class="dash">
   <header class="topbar">
-    <div class="brand"><div class="lh-logo">LH</div><span>LeadHarvest</span><span class="ver" id="ver">v1.1.0</span></div>
+    <div class="brand"><div class="lh-logo">LH</div><span>LeadHarvest</span><span class="ver" id="ver">v1.3.0</span></div>
     <nav class="tabs" id="tabs">
       <button data-tab="data" class="active">Data</button>
       <button data-tab="schema">Data structure</button>
@@ -42,6 +42,27 @@
         <button class="btn" id="copyBtn">Copy</button>
         <button class="btn" id="printBtn">Print / PDF</button>
         <button class="btn btn-danger" id="deleteSel">Delete selected</button>
+      </div>
+      <div class="toolbar" style="margin-top:-2px">
+        <select id="filterHas" style="width:158px" title="Field availability filter" aria-label="Field availability filter">
+          <option value="">Any record</option>
+          <option value="contact">Has email or phone</option>
+          <option value="email">Has email</option>
+          <option value="phone">Has phone</option>
+          <option value="address">Has address</option>
+          <option value="company">Has company</option>
+        </select>
+        <input type="text" id="filterCity" placeholder="City contains…" style="max-width:150px" aria-label="Filter by city">
+        <input type="text" id="filterCompany" placeholder="Company contains…" style="max-width:165px" aria-label="Filter by company">
+        <select id="filterConf" style="width:150px" title="Minimum confidence" aria-label="Minimum confidence">
+          <option value="0">Any confidence</option>
+          <option value="0.5">Confidence 50%+</option>
+          <option value="0.7">Confidence 70%+</option>
+          <option value="0.85">Confidence 85%+</option>
+        </select>
+        <button class="btn btn-sm" id="clearFilters">Clear filters</button>
+        <span class="spacer"></span>
+        <button class="btn btn-sm" id="selectAllFiltered">Select all filtered</button>
       </div>
       <div class="tablewrap"><table id="dataTable"><thead></thead><tbody></tbody></table></div>
       <p class="hint">Cell par click karke value edit kar sakte hain (auto-save). Column header par click se sorting hoti hai. Neeche wali export bar aapke Data structure (Schema tab) ke hisaab se columns banati hai.</p>
@@ -125,6 +146,15 @@
           <label class="row small" style="font-weight:600"><input type="checkbox" id="dedupe"> Duplicate records hatao</label>
           <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="autoScroll"> Scrape se pehle page auto-scroll karo (lazy-load content ke liye)</label>
           <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="deepScan"> Deep scan (JSON-LD, microdata, tables, meta)</label>
+          <label class="field" style="margin-top:10px"><span>Minimum confidence to keep a record</span>
+            <select id="minConfidence">
+              <option value="0">Keep everything (0%)</option>
+              <option value="0.4">50% and above</option>
+              <option value="0.6">60% and above</option>
+              <option value="0.8">80% and above</option>
+            </select>
+            <div class="hint">Kam confidence wale records (jaise sirf ek naam) save hi nahi honge.</div>
+          </label>
           <label class="row small" style="font-weight:600;margin-top:6px"><input type="checkbox" id="blockLocalhost"> Localhost / internal pages block karo</label>
         </div>
         <div class="panel">

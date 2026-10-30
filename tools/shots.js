@@ -28,13 +28,13 @@ const history = [
   { id: 'h4', at: '2026-10-30T09:12:00.000Z', url: 'https://sharmaca.in/contact', domain: 'sharmaca.in', title: 'Contact', pageType: 'contact', method: 'contact', count: 1, durationMs: 30, signals: {}, format: 'csv' }
 ];
 
-const env = { browser: 'Chrome', browser_version: '148.0.7339.80', platform: 'Windows 10/11', ui_language: 'en', extension_version: '1.2.0' };
+const env = { browser: 'Chrome', browser_version: '148.0.7339.80', platform: 'Windows 10/11', ui_language: 'en', extension_version: '1.3.0' };
 
 /* Build a realistic event log + the metrics that come from it. */
 let metrics = T.emptyMetrics();
 const events = [];
 function ev(event, ts, data, message) {
-  const e = { id: 'l' + events.length, ts, event, category: (T.CATALOG[event] || {}).cat || 'general', priority: (T.CATALOG[event] || {}).p || 'P2', level: 'info', scope: (T.CATALOG[event] || {}).cat || 'general', message, hostname: data.hostname || '', session_id: data.session_id || '', browser: env.browser, browser_version: env.browser_version, platform: env.platform, v: '1.2.0', data };
+  const e = { id: 'l' + events.length, ts, event, category: (T.CATALOG[event] || {}).cat || 'general', priority: (T.CATALOG[event] || {}).p || 'P2', level: 'info', scope: (T.CATALOG[event] || {}).cat || 'general', message, hostname: data.hostname || '', session_id: data.session_id || '', browser: env.browser, browser_version: env.browser_version, platform: env.platform, v: '1.3.0', data };
   events.unshift(e);
   metrics = T.foldMetrics(metrics, e);
 }
@@ -62,7 +62,7 @@ metrics.exports = { total: 2, ok: 2, failed: 0, by_format: { xlsx: 1, csv: 1 } }
 metrics.perf = { extraction_ms_sum: 111, extraction_ms_count: 3, max_ms: 51, record_ms_sum: 37, record_ms_count: 3 };
 metrics.sites = { 'sunriseclinic.in': { sessions: 1, records: 1, last: '2026-10-30T09:31:00Z' }, 'example-directory.com': { sessions: 1, records: 3, last: '2026-10-30T09:24:00Z' }, 'nimbustech.io': { sessions: 1, records: 3, last: '2026-10-30T09:18:00Z' } };
 
-const state = { ok: true, version: '1.2.0', settings, records, history, logs: events, metrics, env, capabilities: T.CAPABILITIES };
+const state = { ok: true, version: '1.3.0', settings, records, history, logs: events, metrics, env, capabilities: T.CAPABILITIES };
 
 const STUB = `
 window.chrome = {
@@ -70,13 +70,13 @@ window.chrome = {
     sendMessage: async (msg) => {
       if (msg && msg.type === 'LH_GET_STATE') return ${JSON.stringify(state)};
       if (msg && (msg.type === 'LH_GET_DIAGNOSTICS' || msg.type === 'LH_SHARE_LOGS')) {
-        return { ok: true, bundle: { meta: { generated_at: new Date().toISOString(), trigger: 'preview', note: '', session_id: 's_9f21c4', extension_version: '1.2.0', env: ${JSON.stringify(env)}, parser_version: 'v1.2', schema_version: '1' }, counts: { records: 7, history: 4, events: 11, storage_bytes_estimate: 18432 }, capabilities: {}, rates: {}, metrics: {}, settings_snapshot: { fields_enabled: 12, fields_total: 15, scrape: {}, output: {}, logging: {}, ai: { mode: 'local', provider: 'sarvam', model: '', has_key: false } }, history: [], events: [] } };
+        return { ok: true, bundle: { meta: { generated_at: new Date().toISOString(), trigger: 'preview', note: '', session_id: 's_9f21c4', extension_version: '1.3.0', env: ${JSON.stringify(env)}, parser_version: 'v1.2', schema_version: '1' }, counts: { records: 7, history: 4, events: 11, storage_bytes_estimate: 18432 }, capabilities: {}, rates: {}, metrics: {}, settings_snapshot: { fields_enabled: 12, fields_total: 15, scrape: {}, output: {}, logging: {}, ai: { mode: 'local', provider: 'sarvam', model: '', has_key: false } }, history: [], events: [] } };
       }
       return { ok: true };
     },
     onMessage: { addListener: () => {} },
     getURL: p => 'chrome-extension://leadharvest/' + p,
-    getManifest: () => ({ version: '1.2.0' })
+    getManifest: () => ({ version: '1.3.0' })
   },
   storage: { local: { get: async () => ({}), set: async () => {} } },
   tabs: { query: async () => [{ id: 1, url: 'https://sunriseclinic.in/', title: 'Sunrise Clinic' }], create: async () => {}, sendMessage: async () => ({ ok: true }) },
@@ -89,6 +89,23 @@ window.setInterval = () => 0;
 `;
 
 (async () => {
+  /* Capture only as much height as the page actually uses. */
+  async function shotTo(page, file) {
+    const h = await page.evaluate(() => {
+      const body = document.body;
+      const prev = body.style.minHeight;
+      body.style.minHeight = '0';
+      const content = Math.ceil(body.getBoundingClientRect().height + 24);
+      body.style.minHeight = prev;
+      return Math.min(content, window.innerHeight);
+    });
+    await page.screenshot({
+      path: path.join(OUT, file),
+      clip: { x: 0, y: 0, width: page.viewport().width, height: Math.max(320, h) }
+    });
+    console.log(file);
+  }
+
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_PATH || '/usr/local/bin/chromium',
     headless: 'new',
@@ -96,7 +113,7 @@ window.setInterval = () => 0;
   });
 
   const dash = await browser.newPage();
-  await dash.setViewport({ width: 1360, height: 880, deviceScaleFactor: 2 });
+  await dash.setViewport({ width: 1680, height: 900, deviceScaleFactor: 2 });
   await dash.evaluateOnNewDocument(STUB);
   await dash.goto('file://' + path.join(EXT, 'src/dashboard.html') + '#data', { waitUntil: 'networkidle0' });
   await new Promise(r => setTimeout(r, 700));
@@ -104,29 +121,31 @@ window.setInterval = () => 0;
   const rows = await dash.$$eval('#dataTable tbody tr', els => els.length);
   console.log('dashboard rows rendered:', rows);
 
-  await dash.evaluate(() => { document.body.style.zoom = '0.86'; });
+  /* taller viewport so the whole table fits without an inner scroll cut */
+  await dash.setViewport({ width: 1680, height: 1180, deviceScaleFactor: 2 });
   await new Promise(r => setTimeout(r, 250));
-  await dash.screenshot({ path: path.join(OUT, 'shot-dashboard-data.png') });
-  await dash.evaluate(() => { document.body.style.zoom = '1'; });
+  await shotTo(dash, 'shot-dashboard-data.png');
+  await dash.setViewport({ width: 1680, height: 900, deviceScaleFactor: 2 });
+  await new Promise(r => setTimeout(r, 200));
   console.log('shot-dashboard-data.png');
 
   await dash.evaluate(() => { document.querySelector('#tabs button[data-tab="schema"]').click(); });
   await new Promise(r => setTimeout(r, 400));
   await dash.evaluate(() => { document.querySelectorAll('#fieldList .fieldrow')[2].classList.add('open'); });
   await new Promise(r => setTimeout(r, 250));
-  await dash.screenshot({ path: path.join(OUT, 'shot-dashboard-schema.png') });
+  await shotTo(dash, 'shot-dashboard-schema.png');
   console.log('shot-dashboard-schema.png');
 
   await dash.evaluate(() => { document.querySelector('#tabs button[data-tab="settings"]').click(); });
   await new Promise(r => setTimeout(r, 400));
   await dash.evaluate(() => { const el = document.querySelector('#diagPanel'); if (el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 74); });
   await new Promise(r => setTimeout(r, 350));
-  await dash.screenshot({ path: path.join(OUT, 'shot-dashboard-diagnostics.png') });
+  await shotTo(dash, 'shot-dashboard-diagnostics.png');
   console.log('shot-dashboard-diagnostics.png');
 
   await dash.evaluate(() => { document.querySelector('#tabs button[data-tab="history"]').click(); });
   await new Promise(r => setTimeout(r, 350));
-  await dash.screenshot({ path: path.join(OUT, 'shot-dashboard-history.png') });
+  await shotTo(dash, 'shot-dashboard-history.png');
   console.log('shot-dashboard-history.png');
 
   const pop = await browser.newPage();

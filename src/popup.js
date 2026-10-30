@@ -17,17 +17,31 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     box.innerHTML = msg;
   }
 
+  /* The popup only needs counts, so it asks for a lightweight summary instead of
+     pulling every stored record through the message channel. */
   async function loadState() {
-    const res = await api.runtime.sendMessage({ type: 'LH_GET_STATE' });
+    const res = await api.runtime.sendMessage({ type: 'LH_GET_SUMMARY' });
     if (res && res.ok) {
-      state = res;
-      $('ver').textContent = 'v' + (res.version || '1.0.0');
-      $('storedCount').textContent = res.records.length;
-      $('storedCount').title = res.records.length + ' records aapke device par saved';
+      state.settings = res.settings;
+      state.counts = res.counts || { records: 0 };
+      $('ver').textContent = 'v' + (res.version || '1.3.0');
+      $('storedCount').textContent = state.counts.records;
+      $('storedCount').title = state.counts.records + ' records aapke device par saved';
       if (state.settings && state.settings.output && state.settings.output.format) {
         $('format').value = state.settings.output.format;
       }
     }
+  }
+
+  /* Full records are fetched only when an export actually needs them. */
+  async function ensureRecords() {
+    if (Array.isArray(state.records)) return state.records;
+    const res = await api.runtime.sendMessage({ type: 'LH_GET_STATE' });
+    if (res && res.ok) {
+      state.records = res.records || [];
+      state.settings = res.settings || state.settings;
+    }
+    return state.records || [];
   }
 
   async function loadTab() {
@@ -82,15 +96,16 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
   }
 
   async function exportAll() {
-    if (!state.records.length) { toast('Abhi koi record saved nahi hai. Pehle scrape karein.', 'err'); return; }
+    const records = await ensureRecords();
+    if (!records.length) { toast('Abhi koi record saved nahi hai. Pehle scrape karein.', 'err'); return; }
     const format = $('format').value;
     try {
-      const first = state.records[0];
-      const out = LeadExport.build(format, state.records, state.settings, {
+      const first = records[0];
+      const out = LeadExport.build(format, records, state.settings, {
         title: 'LeadHarvest export',
-        subtitle: state.records.length + ' record(s) · ' + (first.domain || '')
+        subtitle: records.length + ' record(s) · ' + (first.domain || '')
       });
-      const name = LeadExport.fileName(state.settings, out.ext, state.records);
+      const name = LeadExport.fileName(state.settings, out.ext, records);
       await LeadSave.save(name, out.mime, out.bytes || out.text);
       await api.runtime.sendMessage({ type: 'LH_EXPORT_LOG', format, count: state.records.length });
       const latinWarn = format === 'pdf' && LeadPDF.hasNonLatin(out.table.rows);
@@ -132,6 +147,6 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
   (async () => {
     await loadTab();
     await loadState();
-    track('popup_opened', { records_stored: state.records.length, tab_available: !!(activeTab && activeTab.url) });
+    track('popup_opened', { records_stored: (state.counts && state.counts.records) || 0, tab_available: !!(activeTab && activeTab.url) });
   })();
 })();

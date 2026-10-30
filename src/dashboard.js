@@ -8,7 +8,10 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
   const SCHEMA = LeadHarvestSchema;
 
   let S = { settings: null, records: [], history: [], logs: [], version: '1.0.0' };
-  const ui = { search: '', sort: { key: '', dir: 1 }, selected: new Set(), showDisabled: true, tab: 'data' };
+  const ui = {
+    search: '', sort: { key: '', dir: 1 }, selected: new Set(), showDisabled: true, tab: 'data',
+    filters: { has: '', city: '', company: '', minConf: 0 }
+  };
 
   /* ------------------------------------------------------------- helpers */
   let toastTimer = null;
@@ -102,6 +105,22 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
         return hay.toLowerCase().includes(q);
       });
     }
+    const f = ui.filters;
+    if (f.has) {
+      list = list.filter(r => {
+        const v = r.values || {};
+        if (f.has === 'contact') return !!(v.email || v.phone);
+        if (f.has === 'email') return !!v.email;
+        if (f.has === 'phone') return !!v.phone;
+        if (f.has === 'address') return !!v.address;
+        if (f.has === 'company') return !!v.company;
+        return true;
+      });
+    }
+    if (f.city) list = list.filter(r => String((r.values || {}).city || '').toLowerCase().includes(f.city.toLowerCase()));
+    if (f.company) list = list.filter(r => String((r.values || {}).company || '').toLowerCase().includes(f.company.toLowerCase()));
+    if (f.minConf > 0) list = list.filter(r => (Number(r.confidence) || 0) >= f.minConf);
+
     if (ui.sort.key) {
       const k = ui.sort.key, dir = ui.sort.dir;
       list.sort((a, b) => {
@@ -118,7 +137,14 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     const list = filteredRecords();
     const max = 400;
     const shown = list.slice(0, max);
-    $('#dataCount').textContent = list.length + ' record' + (list.length === 1 ? '' : 's') + (list.length > max ? ' (first ' + max + ' shown)' : '');
+    $('#dataCount').textContent = list.length + ' record' + (list.length === 1 ? '' : 's') +
+      (list.length !== S.records.length ? ' of ' + S.records.length : '') +
+      (list.length > max ? ' · first ' + max + ' shown' : '');
+    const selBtn = $('#exportSel');
+    if (selBtn) {
+      const n = ui.selected.size ? list.filter(r => ui.selected.has(r.id)).length : list.length;
+      selBtn.textContent = 'Export ' + n + ' record' + (n === 1 ? '' : 's');
+    }
 
     const head = ['<th style="width:34px"><input type="checkbox" id="selAll"></th>']
       .concat(cols.map(c => '<th data-sort="' + esc(c.key) + '" style="cursor:pointer;white-space:nowrap">' + esc(c.label) + (ui.sort.key === c.key ? (ui.sort.dir > 0 ? ' ▲' : ' ▼') : '') + '</th>'))
@@ -140,7 +166,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
           (isUrl ? '<a href="' + esc(v) + '" target="_blank" rel="noreferrer">' + esc(hostOf(v)) + '</a>' : esc(v)) + '</td>';
       }).join('');
       return '<tr data-id="' + esc(r.id) + '"><td><input type="checkbox" class="rowsel" data-id="' + esc(r.id) + '"' + (ui.selected.has(r.id) ? ' checked' : '') + '></td>' +
-        cells + '<td><button class="btn btn-sm delRow" data-id="' + esc(r.id) + '" title="Delete">✕</button></td></tr>';
+        cells + '<td><button class="btn btn-sm delRow" data-id="' + esc(r.id) + '" title="Delete record" aria-label="Delete record">✕</button></td></tr>';
     }).join('');
     $('#dataTable tbody').innerHTML = rows;
 
@@ -238,7 +264,49 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     await api.storage.local.set({ lh_print_payload: html });
     api.tabs.create({ url: api.runtime.getURL('src/print.html') });
   });
-  $('#searchBox').addEventListener('input', e => { ui.search = e.target.value; renderData(); });
+  let searchTimer = null;
+  $('#searchBox').addEventListener('input', e => {
+    ui.search = e.target.value;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(renderData, 180);
+  });
+
+  function applyFilters(track) {
+    const before = filteredRecords().length;
+    ui.filters.has = ($('#filterHas') || {}).value || '';
+    ui.filters.city = (($('#filterCity') || {}).value || '').trim();
+    ui.filters.company = (($('#filterCompany') || {}).value || '').trim();
+    ui.filters.minConf = Number((($('#filterConf') || {}).value) || 0);
+    renderData();
+    if (track && (ui.filters.has || ui.filters.city || ui.filters.company || ui.filters.minConf)) {
+      const after = filteredRecords().length;
+      send({
+        type: 'LH_LOG_EVENT', event: 'filter_applied', level: 'info', scope: 'ui',
+        message: 'Filter applied',
+        data: { type: 'record_filter', has: ui.filters.has, city: !!ui.filters.city, company: !!ui.filters.company, min_confidence: ui.filters.minConf, matched: after, rejected: S.records.length - after }
+      });
+    }
+  }
+  ['#filterHas', '#filterCity', '#filterCompany', '#filterConf'].forEach(sel => {
+    const el = $(sel);
+    if (!el) return;
+    el.addEventListener(sel === '#filterCity' || sel === '#filterCompany' ? 'input' : 'change', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => applyFilters(true), 200);
+    });
+  });
+  if ($('#clearFilters')) $('#clearFilters').addEventListener('click', () => {
+    ['#filterHas', '#filterCity', '#filterCompany'].forEach(sel => { if ($(sel)) $(sel).value = ''; });
+    if ($('#filterConf')) $('#filterConf').value = '0';
+    ui.filters = { has: '', city: '', company: '', minConf: 0 };
+    renderData();
+    toast('Filters cleared');
+  });
+  if ($('#selectAllFiltered')) $('#selectAllFiltered').addEventListener('click', () => {
+    filteredRecords().forEach(r => ui.selected.add(r.id));
+    renderData();
+    toast(ui.selected.size + ' records selected');
+  });
   $('#exportFormat').addEventListener('change', async () => {
     S.settings.output = Object.assign({}, S.settings.output, { format: $('#exportFormat').value });
     await persistSettings();
@@ -375,6 +443,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     $('#dedupe').checked = !!s.scrape.dedupe;
     $('#autoScroll').checked = !!s.scrape.autoScroll;
     $('#deepScan').checked = s.scrape.deepScan !== false;
+    if ($('#minConfidence')) $('#minConfidence').value = String(s.scrape.minConfidence || 0);
     $('#blockLocalhost').checked = !!(s.privacy && s.privacy.blockLocalhost);
     $('#outFormat').value = s.output.format || 'xlsx';
     $('#delimiter').value = s.output.delimiter === '\t' ? '\\t' : (s.output.delimiter || ',');
@@ -394,6 +463,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     S.settings.scrape.dedupe = $('#dedupe').checked;
     S.settings.scrape.autoScroll = $('#autoScroll').checked;
     S.settings.scrape.deepScan = $('#deepScan').checked;
+    S.settings.scrape.minConfidence = Number($('#minConfidence').value) || 0;
     S.settings.privacy.blockLocalhost = $('#blockLocalhost').checked;
     S.settings.output.format = $('#outFormat').value;
     S.settings.output.delimiter = $('#delimiter').value === '\\t' ? '\t' : $('#delimiter').value;
@@ -800,6 +870,25 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     renderData(); renderSchema(); renderSettings(); renderHistory(); renderLogs(); renderAiForm(); renderHelp();
     const start = (location.hash || '').replace('#', '') || 'data';
     switchTab(['data', 'schema', 'ai', 'settings', 'history', 'logs', 'help'].includes(start) ? start : 'data');
-    setInterval(async () => { await loadState(); if (ui.tab === 'logs') renderLogs(); if (ui.tab === 'settings') renderSettings(); }, 8000);
+
+    /* Refresh when the background actually writes something, instead of polling.
+       Polling every few seconds re-read every record and re-render the table, which
+       could wipe a cell the user was in the middle of editing. */
+    if (api.storage && api.storage.onChanged) {
+      let refreshTimer = null;
+      api.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') return;
+        if (!changes.lh_records && !changes.lh_history && !changes.lh_logs && !changes.lh_settings) return;
+        const el = document.activeElement;
+        if (el && (el.isContentEditable || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+        clearTimeout(refreshTimer);
+        refreshTimer = setTimeout(async () => {
+          await loadState();
+          if (ui.tab === 'logs') renderLogs();
+          if (ui.tab === 'settings') renderSettings();
+          if (ui.tab === 'history') renderHistory();
+        }, 350);
+      });
+    }
   })();
 })();

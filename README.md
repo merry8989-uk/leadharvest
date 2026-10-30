@@ -5,7 +5,7 @@ phone, email, designation, company, address — nikaal kar aapke device par loca
 unhe **Excel, CSV, PDF, TXT, Notes (.md), JSON** me export karta hai. Sab kuch browser ke andar chalta
 hai: koi server nahi, koi account nahi, koi telemetry nahi.
 
-**Version 1.2.0** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
+**Version 1.3.0** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
 (Excel aur PDF writer isi project me likhe hain)
 
 - **Download:** https://github.com/merry8989-uk/leadharvest/releases/latest
@@ -41,7 +41,7 @@ Firefox build chalta hai, ya desktop par scrape karke exported file phone par bh
 ## 2. Use
 
 1. Website kholein — contact page, team page, business listing, directory.
-2. Toolbar icon → **"Is page se contact data scrape karein"** (ya right-click → LeadHarvest).
+2. Toolbar icon → **"Is page se contact data scrape karein"** (ya right-click → LeadHarvest, ya **Alt+Shift+L**).
 3. Popup batata hai: kitne records mile, kaunse fields, page type, kitne ms lage.
 4. **Dashboard** → *Data* tab me records; format chunein → **Export** → file `Downloads` me.
 
@@ -110,7 +110,7 @@ fields zaroori hain — reason ke saath.
 | Format | File | Best for |
 |---|---|---|
 | Excel | `.xlsx` | Sort/filter, CRM import (freeze header + autofilter) |
-| CSV | `.csv` | Google Sheets, Zoho, HubSpot (UTF-8 BOM, Hindi safe) |
+| CSV | `.csv` | Google Sheets, Zoho, HubSpot (UTF-8 BOM, Hindi safe; `=`, `@` ya `+text` jaise values apostrophe se neutralise hote hain taaki formula na bane) |
 | PDF | `.pdf` | Client ko bhejna, print (A4/Letter, paginated) |
 | TXT | `.txt` | Reading, WhatsApp paste |
 | Notes | `.md` | Notion, Obsidian, Keep |
@@ -124,7 +124,8 @@ File name template: `{domain}`, `{date}`, `{time}`, `{count}`.
 
 ## 8. Local data, history, logs
 
-- **Records** — `storage.local`, max 5,000, device par.
+- **Records** — `storage.local`, max 5,000, device par. Data tab me filters: has email / phone /
+  address / company, city contains, company contains, minimum confidence — aur "Select all filtered".
 - **History** — 500 entries: kab, kaunse page se, method, count, duration, export format. Kisi bhi entry
   ko dobara export ya delete kar sakte hain.
 - **Logs** — 15 categories, 57 event types: lifecycle, scraping session, field extraction
@@ -169,6 +170,7 @@ Kuch bhi tab tak nahi jata jab tak aap button na dabayein — aur mail aapke apn
 | PDF me Hindi `?` ban gaya | HTML export → print se PDF banayein (browser fonts) |
 | Kisi site par field nahi mila | Settings → Diagnostics → note likh kar **Share logs with developer** — bundle me kaunse field miss hue aur site ka hostname chala jayega |
 | Excel number text ban gaya | Jaan-boojh kar — leading zero bachane ke liye |
+| Kam confidence wale records nahi chahiye | Settings → "Minimum confidence to keep a record" |
 
 ---
 

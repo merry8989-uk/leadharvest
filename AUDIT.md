@@ -1,4 +1,4 @@
-# Audit & Firefox (AMO) readiness — LeadHarvest v1.2.0
+# Audit & Firefox (AMO) readiness — LeadHarvest v1.3.0
 
 Date: 30 October 2026 · Auditor: automated static audit + manual code review
 Scope: full source tree (`manifest.json`, `src/**`, `icons/**`) — 24 files, ~230 KB
@@ -109,7 +109,12 @@ point.
 | `innerHTML` for large tables | Used to render thousands of rows | Accepted — all values escaped; no user-controlled markup reaches the sink |
 | API key storage | Stored in `storage.local` in plain text | Accepted and documented — extension storage is not a secret store; the privacy policy says to treat the key like a saved password |
 | Log redaction | Emails/phones could land in logs | Fixed — redacted by default (`[email]`, `[number]`) |
-| Dedupe | Re-scraping duplicated records | Fixed — dedupe on phone + email + name + company, on by default |
+| Dedupe | Re-scraping duplicated records | Fixed — dedupe on phone + email + name + company, on by default; phone comparison now normalises country codes so `+91 98765 43210` and `9876543210` collapse to one |
+| CSV formula injection | A scraped value like `=HYPERLINK(...)` or `+cmd\|calc` would execute when the CSV was opened in Excel or LibreOffice | Fixed — `=`, `@`, a leading tab/CR, and `+`/`-` followed by letters are prefixed with an apostrophe; plain numbers and phone numbers are untouched |
+| Dashboard polling | A refresh every 8 s re-read every record and re-rendered the table, which could wipe a cell mid-edit | Fixed — refresh is driven by `storage.onChanged`, debounced, and skipped while a field has focus |
+| Popup payload | The popup pulled every stored record just to show a count | Fixed — new `LH_GET_SUMMARY` returns counts; full records are fetched only when an export needs them |
+| Blocked pages | Internal pages were only blocked when the localhost toggle was on | Fixed — non-http(s) and extension-store pages are always refused |
+| Metrics growth | `metrics.sites` grew without limit | Fixed — capped at the 200 most recently active hosts |
 
 **Not present, and worth stating for the record:** no `eval`, no `new Function`, no remote script or
 style tags, no dynamic `import()` of a remote URL, no WebSocket, no `XMLHttpRequest`, no
@@ -172,6 +177,7 @@ faked.
 
 | Version | Notes |
 |---|---|
+| 1.3.0 | Deep audit round: CSV formula-injection guard, phone-aware de-duplication, 2-row tables, non-http(s) pages always blocked, dashboard refresh without polling (no more interrupted cell edits), popup loads a summary instead of every record, bounded site metrics, log cap aligned with the UI, field filters, confidence threshold, Alt+Shift+L shortcut |
 | 1.2.0 | Full diagnostic telemetry (57 event types, 15 categories), running metrics with the rates from the logging checklist, capability report, and a "Share logs with developer" flow that composes a pre-filled mail to the maintainer; data-collection declaration extended for the optional share |
 | 1.1.0 | Cross-browser build (Firefox 140+ / Chrome 121+), data-collection declaration, no automatic content-script injection, escaping and `document.write` fixes, audit tooling |
 | 1.0.0 | First Chrome release |

@@ -56,10 +56,24 @@
   }
 
   /* ------------------------------------------------------------------ CSV */
+  /* A value lifted from a web page must never become a spreadsheet formula.
+     "=", "@", a leading tab/CR, or a +/- followed by letters are neutralised with
+     an apostrophe; plain numbers and phone numbers (which start with +) are left
+     alone so the data stays usable. */
+  const CSV_FORMULA = /^[=@\t\r]/;
+  const CSV_SIGNED = /^[+\-]/;
+  function csvSafe(value) {
+    const s = String(value == null ? '' : value);
+    if (!s) return s;
+    if (CSV_FORMULA.test(s)) return "'" + s;
+    if (CSV_SIGNED.test(s) && /[A-Za-z|]/.test(s)) return "'" + s;
+    return s;
+  }
+
   function toCSV(table, settings) {
     const d = (settings.output && settings.output.delimiter) || ',';
     const q = v => {
-      const s = String(v == null ? '' : v);
+      const s = csvSafe(v);
       return new RegExp('["' + d + '\\n\\r]').test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     };
     const lines = [];
@@ -192,7 +206,7 @@
     }
   }
 
-  const api = { build, toTable, columnsFor, fileName, stamp, prettyDate, toCSV, toTXT, toMD, toJSON, toHTML };
+  const api = { build, toTable, columnsFor, fileName, stamp, prettyDate, toCSV, toTXT, toMD, toJSON, toHTML, csvSafe };
   root.LeadExport = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

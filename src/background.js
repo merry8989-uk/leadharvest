@@ -13,7 +13,7 @@ const KEYS = {
   settings: 'lh_settings', records: 'lh_records', history: 'lh_history',
   logs: 'lh_logs', metrics: 'lh_metrics', session: 'lh_session'
 };
-const CAPS = { records: 5000, history: 500, logs: 2000 };
+const CAPS = { records: 5000, history: 500, logs: 5000 };
 
 /* ------------------------------------------------------------- storage */
 async function read(key, fallback) {
@@ -114,13 +114,28 @@ async function refreshBadge() {
 /* --------------------------------------------------------------- scrape */
 function isBlocked(url, settings) {
   if (!url) return 'No URL';
+  /* Browser-internal and local pages can never be scraped, whatever the settings say. */
+  if (/^(chrome|edge|about|moz-extension|chrome-extension|devtools|view-source|data|blob):/i.test(url)) {
+    return 'Browser internal page par scrape nahi ho sakta.';
+  }
+  if (/^file:/i.test(url)) return 'Local file par scrape nahi ho sakta (file URL access off hai).';
+  if (!/^https?:/i.test(url)) return 'Sirf http/https pages par scrape hota hai.';
+  if (/^https?:\/\/(chrome\.google\.com\/webstore|chromewebstore\.google\.com|addons\.mozilla\.org)/i.test(url)) {
+    return 'Extension store pages par allowed nahi hai.';
+  }
   if (settings.privacy && settings.privacy.blockLocalhost) {
-    if (/^(chrome|edge|about|chrome-extension|devtools|view-source):/i.test(url)) return 'Browser internal page par scrape nahi ho sakta.';
-    if (/^file:/i.test(url)) return 'Local file par scrape nahi ho sakta.';
     if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])/i.test(url)) return 'Localhost block hai (Settings me off kar sakte hain).';
-    if (/^https?:\/\/(chrome\.google\.com\/webstore|chromewebstore\.google\.com)/i.test(url)) return 'Chrome Web Store par allowed nahi hai.';
   }
   return null;
+}
+
+/* Compare phone numbers the way a human would: +91 98765 43210 and 9876543210 are the same. */
+function phoneKey(raw) {
+  let d = String(raw || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.length === 12 && d.startsWith('91')) d = d.slice(2);
+  else if (d.length === 11 && d.startsWith('0')) d = d.slice(1);
+  return d;
 }
 
 async function ensureContentScript(tabId) {
@@ -149,7 +164,7 @@ function dedupeRecords(merged) {
   for (const r of merged) {
     const v = r.values || {};
     const email = (v.email || '').split(',')[0].trim().toLowerCase();
-    const phone = (v.phone || '').split(',')[0].replace(/\D/g, '');
+    const phone = phoneKey((v.phone || '').split(',')[0]);
     const nameCo = ((v.name || '') + '|' + (v.company || '')).toLowerCase().trim();
 
     const fullKey = email + '|' + phone + '|' + nameCo;
@@ -201,7 +216,16 @@ async function scrapeTab(tabId, options) {
     if (!result || !result.ok) throw new Error((result && result.error) || 'Extraction returned nothing');
 
     const existing = await getRecords();
-    const fresh = result.records || [];
+    const minConf = Number(settings.scrape.minConfidence) || 0;
+    const allFound = result.records || [];
+    const fresh = minConf > 0 ? allFound.filter(r => (Number(r.confidence) || 0) >= minConf) : allFound;
+    if (minConf > 0 && fresh.length !== allFound.length) {
+      await recordEvent('filter_applied', {
+        hostname, sessionId: sid,
+        message: 'Confidence filter dropped ' + (allFound.length - fresh.length) + ' record(s)',
+        data: { type: 'min_confidence', threshold: minConf, kept: fresh.length, rejected: allFound.length - fresh.length }
+      });
+    }
     const ids = fresh.map(r => r.id);
 
     let merged = fresh.concat(existing);
@@ -371,6 +395,20 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           });
           break;
         }
+        case 'LH_GET_SUMMARY': {
+          const [settings, records, history, logs, metrics] = await Promise.all([
+            getSettings(), getRecords(), getHistory(), getLogs(), getMetrics()
+          ]);
+          sendResponse({
+            ok: true,
+            counts: { records: records.length, history: history.length, logs: logs.length },
+            settings,
+            metrics: metrics || (T.emptyMetrics ? T.emptyMetrics() : {}),
+            env: T.env ? T.env() : {},
+            version: api.runtime.getManifest().version
+          });
+          break;
+        }
         case 'LH_GET_DIAGNOSTICS': {
           sendResponse({ ok: true, bundle: await buildDiagnostics(msg.note, msg.trigger) });
           break;
@@ -533,6 +571,23 @@ api.contextMenus.onClicked.addListener(async (info, tab) => {
   await api.action.setBadgeBackgroundColor({ color: res.ok ? '#16a34a' : '#dc2626' });
   setTimeout(() => refreshBadge(), 2500);
 });
+
+/* Keyboard shortcut (Alt+Shift+L by default) scrapes the active tab. */
+if (api.commands && api.commands.onCommand) {
+  api.commands.onCommand.addListener(async (command) => {
+    if (command !== 'scrape-page') return;
+    try {
+      const tabs = await api.tabs.query({ active: true, currentWindow: true });
+      const tab = tabs && tabs[0];
+      if (!tab || !tab.id) return;
+      const res = await scrapeTab(tab.id, { trigger: 'shortcut' });
+      await api.action.setBadgeBackgroundColor({ color: res.ok ? '#16a34a' : '#dc2626' });
+      setTimeout(() => refreshBadge(), 2500);
+    } catch (e) {
+      await recordEvent('runtime_error', { level: 'error', scope: 'commands', message: 'Shortcut failed: ' + ((e && e.message) || e), data: { error_code: 'shortcut_failed' } });
+    }
+  });
+}
 
 api.runtime.onStartup.addListener(async () => {
   await recordEvent('background_restarted', { message: 'Browser started, background context loaded' });
