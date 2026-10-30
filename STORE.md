@@ -10,7 +10,7 @@ the shipped build; nothing here promises a feature the code does not have.
 | Field | Value |
 |---|---|
 | Name | `LeadHarvest — Website Data Collector` |
-| Version | `1.3.0` |
+| Version | `1.3.1` |
 | Add-on ID (AMO, permanent) | `leadharvest@br19shc39@gmail.com` |
 | Homepage | https://merry8989-uk.github.io/leadharvest/ |
 | Privacy policy URL | https://merry8989-uk.github.io/leadharvest/privacy.html |
@@ -165,6 +165,13 @@ A static audit script is included: node tools/audit.js .   (result: 28 pass, 2 w
 ## 6. “What’s new” for this version
 
 ```
+v1.3.1
+• No innerHTML sinks left: every view is mounted from a parsed fragment, which clears the
+  addons-linter "unsafe assignment to innerHTML" warnings (14 of them in v1.3.0)
+• Firefox for Android minimum raised to 142, where data_collection_permissions is understood
+• The self-hosted build (which carries gecko.update_url) is now named SELFHOST-ONLY so it cannot
+  be mistaken for the AMO upload
+
 v1.3.0
 • Field filters (has email / phone / address / company, city, company, minimum confidence)
 • Confidence threshold for what gets saved, and the Alt+Shift+L keyboard shortcut
@@ -182,8 +189,8 @@ eight export formats, local history, diagnostic telemetry with a share-to-develo
 
 - [ ] `npx web-ext@latest lint --source-dir .` → 0 errors
 - [ ] `node tools/audit.js .` → 0 failures
-- [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.0.zip` (manifest at the zip root)
-- [ ] Upload that zip to AMO → *On this site* (listed)
+- [ ] `bash build.sh` → `dist/leadharvest-extension-v1.3.1.zip` (manifest at the zip root)
+- [ ] Upload **`leadharvest-extension-v1.3.1.zip`** to AMO → *On this site* (listed). Never upload `leadharvest-SELFHOST-ONLY-*.zip`: it carries `gecko.update_url`, which AMO rejects for listed add-ons.
 - [ ] Fill the fields above, upload the five screenshots, set the licence
 - [ ] Paste §5 into the reviewer notes
 - [ ] After signing, replace the “Download” button on the site with the AMO install link

@@ -72,12 +72,12 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       back.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;display:grid;place-items:center';
       const box = document.createElement('div');
       box.style.cssText = 'background:#fff;border-radius:14px;padding:18px;width:min(560px,92vw);max-height:70vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)';
-      box.innerHTML = '<h3 style="margin-bottom:4px">' + esc(title) + '</h3><p class="small muted" style="margin-bottom:12px">Kis tab par kaam karna hai?</p>';
+LeadDOM.mount(box, '<h3 style="margin-bottom:4px">' + esc(title) + '</h3><p class="small muted" style="margin-bottom:12px">Kis tab par kaam karna hai?</p>');
       tabs.slice(0, 25).forEach(t => {
         const b = document.createElement('button');
         b.className = 'btn';
         b.style.cssText = 'display:block;width:100%;text-align:left;margin-bottom:6px';
-        b.innerHTML = '<b>' + esc(hostOf(t.url)) + '</b><br><span class="small muted">' + esc((t.title || '').slice(0, 80)) + '</span>';
+LeadDOM.mount(b, '<b>' + esc(hostOf(t.url)) + '</b><br><span class="small muted">' + esc((t.title || '').slice(0, 80)) + '</span>');
         b.addEventListener('click', () => { back.remove(); resolve(t); });
         box.appendChild(b);
       });
@@ -149,11 +149,11 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     const head = ['<th style="width:34px"><input type="checkbox" id="selAll"></th>']
       .concat(cols.map(c => '<th data-sort="' + esc(c.key) + '" style="cursor:pointer;white-space:nowrap">' + esc(c.label) + (ui.sort.key === c.key ? (ui.sort.dir > 0 ? ' ▲' : ' ▼') : '') + '</th>'))
       .concat(['<th style="width:70px">Actions</th>']).join('');
-    $('#dataTable thead').innerHTML = '<tr>' + head + '</tr>';
+LeadDOM.mount($('#dataTable thead'), '<tr>' + head + '</tr>');
 
     if (!shown.length) {
-      $('#dataTable tbody').innerHTML = '<tr><td colspan="' + (cols.length + 2) + '" style="padding:26px;text-align:center" class="muted">' +
-        (S.records.length ? 'Search se koi record match nahi hua.' : 'Abhi koi data nahi. Top-right "Scrape current tab" dabayein ya extension icon se page scrape karein.') + '</td></tr>';
+LeadDOM.mount($('#dataTable tbody'), '<tr><td colspan="' + (cols.length + 2) + '" style="padding:26px;text-align:center" class="muted">' +
+        (S.records.length ? 'Search se koi record match nahi hua.' : 'Abhi koi data nahi. Top-right "Scrape current tab" dabayein ya extension icon se page scrape karein.') + '</td></tr>');
       return;
     }
 
@@ -168,7 +168,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       return '<tr data-id="' + esc(r.id) + '"><td><input type="checkbox" class="rowsel" data-id="' + esc(r.id) + '"' + (ui.selected.has(r.id) ? ' checked' : '') + '></td>' +
         cells + '<td><button class="btn btn-sm delRow" data-id="' + esc(r.id) + '" title="Delete record" aria-label="Delete record">✕</button></td></tr>';
     }).join('');
-    $('#dataTable tbody').innerHTML = rows;
+LeadDOM.mount($('#dataTable tbody'), rows);
 
     const selAll = $('#selAll');
     if (selAll) selAll.addEventListener('change', e => {
@@ -342,7 +342,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
 
   function renderSchema() {
     const fields = (S.settings.fields || []).filter(f => ui.showDisabled || f.enabled !== false);
-    $('#fieldList').innerHTML = fields.map(fieldRow).join('') || '<p class="muted">Koi field nahi.</p>';
+LeadDOM.mount($('#fieldList'), fields.map(fieldRow).join('') || '<p class="muted">Koi field nahi.</p>');
 
     $$('#fieldList .fieldrow').forEach(row => {
       const key = row.dataset.key;
@@ -504,8 +504,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     const env = S.env || {};
     const sessions = m.sessions || {};
     const dup = m.duplicates || {};
-    box.innerHTML =
-      diagStat('Events collected', S.logs.length) +
+LeadDOM.mount(box, diagStat('Events collected', S.logs.length) +
       diagStat('Scrape sessions', sessions.started || 0, (sessions.failed || 0) + ' failed') +
       diagStat('Records extracted', (m.records && m.records.extracted) || 0) +
       diagStat('Extraction success', r.extraction_success_rate == null ? '—' : r.extraction_success_rate + '%') +
@@ -513,7 +512,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       diagStat('Duplicates caught', (dup.exact || 0) + (dup.potential || 0)) +
       diagStat('Exports', (m.exports && m.exports.ok) || 0, ((m.exports && m.exports.failed) || 0) + ' failed') +
       diagStat('Errors', (m.errors && m.errors.total) || 0) +
-      diagStat('Avg extraction', (r.avg_processing_ms || 0) + ' ms');
+      diagStat('Avg extraction', (r.avg_processing_ms || 0) + ' ms'));
     const meta = $('#diagMeta');
     if (meta) {
       meta.textContent = [env.browser, env.browser_version, env.platform].filter(Boolean).join(' ') +
@@ -606,12 +605,12 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
   function renderHistory() {
     const h = S.history;
     $('#histCount').textContent = h.length + ' entries';
-    $('#histTable thead').innerHTML = '<tr><th>Kab</th><th>Page</th><th>Type</th><th>Method</th><th>Records</th><th>Format</th><th></th></tr>';
+LeadDOM.mount($('#histTable thead'), '<tr><th>Kab</th><th>Page</th><th>Type</th><th>Method</th><th>Records</th><th>Format</th><th></th></tr>');
     if (!h.length) {
-      $('#histTable tbody').innerHTML = '<tr><td colspan="7" class="muted" style="padding:24px;text-align:center">Koi scrape history nahi. Pehla scrape karein.</td></tr>';
+LeadDOM.mount($('#histTable tbody'), '<tr><td colspan="7" class="muted" style="padding:24px;text-align:center">Koi scrape history nahi. Pehla scrape karein.</td></tr>');
       return;
     }
-    $('#histTable tbody').innerHTML = h.map(e =>
+LeadDOM.mount($('#histTable tbody'), h.map(e =>
       '<tr><td style="white-space:nowrap">' + esc(fmtTime(e.at)) + '</td>' +
       '<td><b>' + esc(e.domain || hostOf(e.url)) + '</b><br><span class="small muted">' + esc((e.title || '').slice(0, 70)) + '</span></td>' +
       '<td><span class="chip">' + esc(e.pageType || '—') + '</span></td>' +
@@ -623,7 +622,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
         '<button class="btn btn-sm" data-open="' + esc(e.url) + '">Open</button> ' +
         '<button class="btn btn-sm btn-danger" data-del="' + esc(e.id) + '">✕</button>' +
       '</td></tr>'
-    ).join('');
+    ).join(''));
 
     $$('#histTable [data-export]').forEach(b => b.addEventListener('click', async () => {
       const entry = S.history.find(x => x.id === b.dataset.export);
@@ -651,19 +650,19 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     let logs = S.logs.slice();
     if (lvl) logs = logs.filter(l => l.level === lvl);
     if (q) logs = logs.filter(l => (l.message + ' ' + l.scope + ' ' + JSON.stringify(l.data || {})).toLowerCase().includes(q));
-    $('#logTable thead').innerHTML = '<tr><th style="width:150px">Time</th><th style="width:70px">Level</th><th style="width:110px">Scope</th><th>Message</th><th>Data</th></tr>';
+LeadDOM.mount($('#logTable thead'), '<tr><th style="width:150px">Time</th><th style="width:70px">Level</th><th style="width:110px">Scope</th><th>Message</th><th>Data</th></tr>');
     if (!logs.length) {
-      $('#logTable tbody').innerHTML = '<tr><td colspan="5" class="muted" style="padding:24px;text-align:center">Koi log nahi.</td></tr>';
+LeadDOM.mount($('#logTable tbody'), '<tr><td colspan="5" class="muted" style="padding:24px;text-align:center">Koi log nahi.</td></tr>');
       return;
     }
-    $('#logTable tbody').innerHTML = logs.slice(0, 500).map(l => {
+LeadDOM.mount($('#logTable tbody'), logs.slice(0, 500).map(l => {
       const chip = l.level === 'error' ? 'err' : l.level === 'warn' ? 'warn' : l.level === 'debug' ? '' : 'ok';
       return '<tr><td class="small" style="white-space:nowrap">' + esc(fmtTime(l.ts)) + '</td>' +
         '<td><span class="chip ' + chip + '">' + esc(l.level) + '</span></td>' +
         '<td class="small">' + esc(l.scope) + '</td>' +
         '<td>' + esc(l.message) + '</td>' +
         '<td class="small muted" style="max-width:320px;word-break:break-word">' + esc(Object.keys(l.data || {}).length ? JSON.stringify(l.data) : '') + '</td></tr>';
-    }).join('');
+    }).join(''));
   }
   $('#logLevel').addEventListener('change', renderLogs);
   $('#logSearch').addEventListener('input', renderLogs);
@@ -720,9 +719,9 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     out.textContent = 'Testing…';
     try {
       const res = await LeadAdvisor.cloudSuggest({ pageType: 'contact', signals: { jsonLd: 1, telLinks: 2, mailLinks: 1, tables: 0, hasAddressText: true, textLength: 2000, forms: 1 }, url: 'https://example.com', sample: 'Contact us: phone, email, address' }, S.settings);
-      out.innerHTML = '<span class="chip ok">Connected</span> ' + (res.recommended || []).length + ' suggestions mile';
+LeadDOM.mount(out, '<span class="chip ok">Connected</span> ' + (res.recommended || []).length + ' suggestions mile');
     } catch (e) {
-      out.innerHTML = '<span class="chip err">Failed</span> ' + esc(e.message);
+LeadDOM.mount(out, '<span class="chip err">Failed</span> ' + esc(e.message));
     }
   });
 
@@ -747,7 +746,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
   }
 
   function showAdvisor(res) {
-    $('#advisorOut').innerHTML = advisorHtml(res);
+LeadDOM.mount($('#advisorOut'), advisorHtml(res));
     $$('#advisorOut [data-enable]').forEach(b => b.addEventListener('click', async () => {
       const f = S.settings.fields.find(x => x.key === b.dataset.enable);
       if (f) { f.enabled = true; await persistSettings(); toast(f.label + ' enabled'); }
@@ -762,7 +761,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
 
   async function runAdvisor() {
     const ai = S.settings.ai || {};
-    if (ai.mode === 'off') { $('#advisorOut').innerHTML = '<h3>AI advisor off hai</h3><p class="muted small">Upar mode "Local rules" chunein — bilkul offline chalta hai.</p>'; return; }
+    if (ai.mode === 'off') {LeadDOM.mount($('#advisorOut'), '<h3>AI advisor off hai</h3><p class="muted small">Upar mode "Local rules" chunein — bilkul offline chalta hai.</p>'); return; }
     const last = S.history[0];
     const ctx = {
       pageType: (last && last.pageType) || 'general',
@@ -770,14 +769,14 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       url: (last && last.url) || '',
       sample: (last && last.title) || ''
     };
-    $('#advisorOut').innerHTML = '<h3>Analyzing…</h3>';
+LeadDOM.mount($('#advisorOut'), '<h3>Analyzing…</h3>');
     try {
       const res = ai.mode === 'cloud'
         ? await LeadAdvisor.cloudSuggest(ctx, S.settings)
         : LeadAdvisor.localSuggest(ctx);
       showAdvisor(res);
     } catch (e) {
-      $('#advisorOut').innerHTML = '<h3>AI error</h3><p class="small" style="color:#b91c1c">' + esc(e.message) + '</p><p class="small muted">Local mode try karein — key ki zaroorat nahi.</p>';
+LeadDOM.mount($('#advisorOut'), '<h3>AI error</h3><p class="small" style="color:#b91c1c">' + esc(e.message) + '</p><p class="small muted">Local mode try karein — key ki zaroorat nahi.</p>');
     }
   }
 
@@ -800,7 +799,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
       '<div><b>' + esc(f.label) + '</b></div><div>' + esc(f.description || '') +
       '<br><span class="small muted">Sources: ' + esc((f.hints.selectors || []).slice(0, 3).join(' · ') || 'heuristics') + (f.hints.jsonld && f.hints.jsonld.length ? ' · JSON-LD: ' + esc(f.hints.jsonld.join(', ')) : '') + '</span></div>'
     ).join('');
-    $('#whatTable').innerHTML = rows;
+LeadDOM.mount($('#whatTable'), rows);
   }
 
   /* ------------------------------------------------------- global actions */

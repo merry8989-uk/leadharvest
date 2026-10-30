@@ -1,4 +1,4 @@
-# Audit & Firefox (AMO) readiness — LeadHarvest v1.3.0
+# Audit & Firefox (AMO) readiness — LeadHarvest v1.3.1
 
 Date: 30 October 2026 · Auditor: automated static audit + manual code review
 Scope: full source tree (`manifest.json`, `src/**`, `icons/**`) — 24 files, ~230 KB
@@ -105,6 +105,7 @@ point.
 | XSS in extension UI | Scraped values were interpolated into `innerHTML` | Fixed — every interpolation passes through `esc()`; verified by the audit's sink check |
 | Popup messages | Error strings from pages were rendered as HTML | Fixed — escaped before display |
 | `document.write` | Used to render the print view | Fixed — `DOMParser` + `importNode` |
+| `update_url` on AMO | A self-hosted build was uploaded to AMO and rejected: `update_url` is not allowed for Mozilla-hosted add-ons | Fixed in tooling — the normal build omits it; the self-hosted artefact is named `leadharvest-SELFHOST-ONLY-*.zip` and `build.sh` prints a warning |
 | Dynamic regex | User-supplied patterns are compiled with `new RegExp` | Accepted — input comes from the user's own schema, not from a page; bad patterns are caught and logged |
 | `innerHTML` for large tables | Used to render thousands of rows | Accepted — all values escaped; no user-controlled markup reaches the sink |
 | API key storage | Stored in `storage.local` in plain text | Accepted and documented — extension storage is not a secret store; the privacy policy says to treat the key like a saved password |
@@ -115,6 +116,8 @@ point.
 | Popup payload | The popup pulled every stored record just to show a count | Fixed — new `LH_GET_SUMMARY` returns counts; full records are fetched only when an export needs them |
 | Blocked pages | Internal pages were only blocked when the localhost toggle was on | Fixed — non-http(s) and extension-store pages are always refused |
 | Metrics growth | `metrics.sites` grew without limit | Fixed — capped at the 200 most recently active hosts |
+| `innerHTML` sinks | 21 assignments, 14 of which addons-linter reported as "unsafe assignment to innerHTML" | Fixed — `src/lib/dom.js` parses the (already escaped) markup in an inert document and imports the nodes; zero `innerHTML` assignments remain in the extension |
+| Android manifest key | `data_collection_permissions` needs Firefox for Android 142, but `strict_min_version` said 140 | Fixed — `gecko_android.strict_min_version: "142.0"` |
 
 **Not present, and worth stating for the record:** no `eval`, no `new Function`, no remote script or
 style tags, no dynamic `import()` of a remote URL, no WebSocket, no `XMLHttpRequest`, no
@@ -177,6 +180,7 @@ faked.
 
 | Version | Notes |
 |---|---|
+| 1.3.1 | AMO validation response: every `innerHTML` assignment replaced with `LeadDOM.mount()` (parsed fragment, imported nodes) so the linter's 14 "unsafe assignment to innerHTML" warnings disappear; `gecko_android.strict_min_version` raised to 142.0 so `data_collection_permissions` is understood on Android; self-hosted build renamed `SELFHOST-ONLY` after an `update_url` rejection on AMO |
 | 1.3.0 | Deep audit round: CSV formula-injection guard, phone-aware de-duplication, 2-row tables, non-http(s) pages always blocked, dashboard refresh without polling (no more interrupted cell edits), popup loads a summary instead of every record, bounded site metrics, log cap aligned with the UI, field filters, confidence threshold, Alt+Shift+L shortcut |
 | 1.2.0 | Full diagnostic telemetry (57 event types, 15 categories), running metrics with the rates from the logging checklist, capability report, and a "Share logs with developer" flow that composes a pre-filled mail to the maintainer; data-collection declaration extended for the optional share |
 | 1.1.0 | Cross-browser build (Firefox 140+ / Chrome 121+), data-collection declaration, no automatic content-script injection, escaping and `document.write` fixes, audit tooling |

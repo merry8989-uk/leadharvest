@@ -14,7 +14,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     const box = $('result');
     box.className = 'result ' + (kind || '');
     box.classList.remove('hidden');
-    box.innerHTML = msg;
+LeadDOM.mount(box, msg);
   }
 
   /* The popup only needs counts, so it asks for a lightweight summary instead of

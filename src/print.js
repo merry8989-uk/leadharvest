@@ -13,7 +13,7 @@ const api = (typeof globalThis.browser !== 'undefined' && globalThis.browser && 
     const title = parsed.querySelector('title');
     if (title) document.title = title.textContent;
     parsed.querySelectorAll('style').forEach(st => document.head.appendChild(document.importNode(st, true)));
-    document.body.innerHTML = '';
+    while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
     parsed.body.querySelectorAll('*').forEach(node => document.body.appendChild(document.importNode(node, true)));
     setTimeout(() => { try { window.print(); } catch (e) { /* user cancelled */ } }, 500);
   } catch (e) {

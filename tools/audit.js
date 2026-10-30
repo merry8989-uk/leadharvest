@@ -106,7 +106,8 @@ const patterns = [
   { re: /new\s+WebSocket\s*\(/g, id: 'websocket', level: 'warn', title: 'WebSocket usage' },
   { re: /XMLHttpRequest/g, id: 'xhr', level: 'warn', title: 'XMLHttpRequest usage' },
   { re: /\bfetch\s*\(/g, id: 'fetch', level: 'info', title: 'fetch() usage' },
-  { re: /\.innerHTML\s*=/g, id: 'innerhtml', level: 'info', title: 'innerHTML assignment' },
+  { re: /\.innerHTML\s*=/g, id: 'innerhtml', level: 'warn', title: 'innerHTML assignment (flagged by addons-linter)' },
+  { re: /insertAdjacentHTML|outerHTML\s*=/g, id: 'outer-html', level: 'warn', title: 'outerHTML / insertAdjacentHTML' },
   { re: /insertAdjacentHTML/g, id: 'adjacent-html', level: 'warn', title: 'insertAdjacentHTML usage' },
   { re: /sk-[A-Za-z0-9]{20,}/g, id: 'secret', level: 'fail', title: 'Hardcoded API key pattern' }
 ];

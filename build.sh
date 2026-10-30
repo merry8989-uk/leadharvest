@@ -20,8 +20,13 @@ if [ "${1:-}" = "--self-hosted" ] || [ "${SELF_HOSTED:-0}" = "1" ]; then
   rm -rf dist/selfhost
   node tools/inject-update-url.js --url "${UPDATE_URL:-https://merry8989-uk.github.io/leadharvest/updates.json}"
   cp -r src icons dist/selfhost/
-  ( cd dist/selfhost && zip -rq "../leadharvest-selfhosted-v$VER.zip" manifest.json src icons -x "*.DS_Store" "*/.*" )
+  ( cd dist/selfhost && zip -rq "../leadharvest-SELFHOST-ONLY-v$VER.zip" manifest.json src icons -x "*.DS_Store" "*/.*" )
   rm -rf dist/selfhost
+  echo
+  echo "  !! leadharvest-SELFHOST-ONLY-v$VER.zip carries gecko.update_url."
+  echo "  !! Do NOT upload that file to addons.mozilla.org - AMO rejects it."
+  echo "  !! AMO upload = dist/leadharvest-extension-v$VER.zip"
+  echo
 fi
 
 # 1c. Firefox update manifest, regenerated for this version so it never goes stale
