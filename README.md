@@ -8,8 +8,9 @@ hai: koi server nahi, koi account nahi, koi telemetry nahi.
 **Version 1.1.0** · Manifest V3 · Chrome 121+ / Firefox 140+ · zero external dependencies
 (Excel aur PDF writer isi project me likhe hain)
 
-- Landing page + feature docs: `docs/index.html`
-- Privacy policy: `docs/privacy.html`
+- **Landing page / feature docs:** https://merry8989-uk.github.io/leadharvest/ (`docs/index.html`)
+- **Privacy policy:** https://merry8989-uk.github.io/leadharvest/privacy.html (`docs/privacy.html`)
+- Source repository: https://github.com/merry8989-uk/leadharvest
 - Security / AMO audit report: `AUDIT.md`
 - Audit chalaane ke liye: `node tools/audit.js .`
 

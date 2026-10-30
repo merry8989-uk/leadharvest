@@ -124,7 +124,7 @@ obfuscation, no analytics SDK, no third-party library.
 5. Upload the zip. The add-on ID `leadharvest@br19shc39.gmail.com` is already in the manifest and
    becomes permanent — do not change it later.
 6. Fill the listing: name, summary (≤ 250 chars), description, category (*Productivity*), screenshots,
-   licence, and the privacy-policy URL (`docs/privacy.html` once GitHub Pages is live).
+   licence, and the privacy-policy URL: https://merry8989-uk.github.io/leadharvest/privacy.html
 7. In the reviewer notes, paste §3 and §4 above — permissions justification and the data-collection
    reasoning. This is the single biggest speed-up for review.
 8. Source code: **not required** (no minification, no bundler). If asked, attach `leadharvest-source.zip`.
