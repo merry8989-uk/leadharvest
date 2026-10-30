@@ -105,7 +105,7 @@
       apiKey: '',
       autoSuggest: true
     },
-    logging: { enabled: true, verbose: false, redactPII: true, maxEntries: 800 },
+    logging: { enabled: true, verbose: false, redactPII: true, maxEntries: 1200 },
     privacy: { blockLocalhost: true }
   };
 
